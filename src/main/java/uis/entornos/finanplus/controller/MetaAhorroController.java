@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import uis.entornos.finanplus.model.MetaAhorro;
-import uis.entornos.finanplus.service.MetaAhorroService;
+import uis.entornos.finanplus.service.IMetaAhorroService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/metas")
+@RequestMapping("/api/metas")
 @RequiredArgsConstructor
 @Tag(name = "Metas de Ahorro", description = "Endpoints para la gestión de metas")
 public class MetaAhorroController {
 
-    private final MetaAhorroService service;
+    private final IMetaAhorroService service;
 
     @GetMapping("/usuario/{idUsuario}")
     @Operation(summary = "Listar metas de ahorro por usuario")

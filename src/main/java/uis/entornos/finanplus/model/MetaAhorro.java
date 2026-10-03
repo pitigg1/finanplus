@@ -2,6 +2,7 @@ package uis.entornos.finanplus.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import uis.entornos.finanplus.enums.EstadoMeta;
 import uis.entornos.finanplus.enums.Prioridad;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Metas_Ahorro")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MetaAhorro {
 	@Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,6 +23,7 @@ public class MetaAhorro {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash"})
     private Usuario usuario;
 
     @NotBlank(message = "El nombre de la meta es obligatorio")
