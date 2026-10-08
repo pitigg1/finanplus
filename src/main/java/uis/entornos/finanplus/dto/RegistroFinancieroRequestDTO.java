@@ -2,6 +2,7 @@ package uis.entornos.finanplus.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -26,5 +27,8 @@ public class RegistroFinancieroRequestDTO {
     private LocalDateTime fechaMovimiento;
 
     private Boolean esRecurrente;
+    
+ // Lista de IDs de las etiquetas enviadas desde el frontend/postman
+    private List<Integer> idsEtiquetas;
 
 }

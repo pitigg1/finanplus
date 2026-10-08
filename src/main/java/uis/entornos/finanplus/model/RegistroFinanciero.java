@@ -2,19 +2,10 @@ package uis.entornos.finanplus.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -64,6 +55,15 @@ public class RegistroFinanciero {
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "Registro_Etiqueta",
+        joinColumns = @JoinColumn(name = "id_registro", columnDefinition = "CHAR(36)"),
+        inverseJoinColumns = @JoinColumn(name = "id_etiqueta")
+    )
+    @Builder.Default
+    private Set<Etiqueta> etiquetas = new HashSet<>();
 
     @PrePersist
     protected void onCreate() { this.createdAt = LocalDateTime.now(); }

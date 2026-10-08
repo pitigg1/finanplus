@@ -1,8 +1,10 @@
 package uis.entornos.finanplus.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -15,8 +17,12 @@ public class Etiqueta {
     @Column(name = "id_etiqueta")
     private Integer idEtiqueta;
 
-    @NotBlank(message = "El nombre de la etiqueta es obligatorio")
-    @Size(max = 100)
-    @Column(unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String nombre;
+
+    @ManyToMany(mappedBy = "etiquetas", fetch = FetchType.LAZY)
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<RegistroFinanciero> registros = new HashSet<>();
 }
