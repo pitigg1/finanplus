@@ -1,9 +1,11 @@
 package uis.entornos.finanplus.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import uis.entornos.finanplus.dto.ActualizarUsuarioDTO;
 import uis.entornos.finanplus.dto.UsuarioResponseDTO;
 import uis.entornos.finanplus.service.IUsuarioService;
 
@@ -29,5 +31,17 @@ public class UsuarioController {
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> listarTodos() {
         return ResponseEntity.ok(usuarioService.listarTodos());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable String id,
+                                                         @Valid @RequestBody ActualizarUsuarioDTO datos) {
+        return ResponseEntity.ok(usuarioService.actualizar(id, datos));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable String id) {
+        usuarioService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

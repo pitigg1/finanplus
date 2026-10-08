@@ -66,6 +66,23 @@ public class MetaAhorroService implements IMetaAhorroService {
     }
 
     @Override
+    public MetaAhorroResponseDTO actualizar(String id, MetaAhorroRequestDTO request, String correoUsuario) {
+        MetaAhorro meta = metaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada con ID: " + id));
+        if (!meta.getUsuario().getCorreo().equalsIgnoreCase(correoUsuario)) {
+            throw new RuntimeException("No tiene permisos para editar esta meta");
+        }
+        meta.setNombre(request.getNombre());
+        meta.setDescripcion(request.getDescripcion());
+        meta.setMontoObjetivo(request.getMontoObjetivo());
+        meta.setFechaObjetivo(request.getFechaObjetivo());
+        if (request.getPrioridad() != null) meta.setPrioridad(Prioridad.valueOf(request.getPrioridad().toUpperCase()));
+        if (request.getEstado() != null) meta.setEstado(EstadoMeta.valueOf(request.getEstado().toUpperCase()));
+        // montoActual NO se toca aquí: lo cambian los aportes
+        return mapearAResponseDTO(metaRepository.save(meta));
+    }
+
+    @Override
     public void eliminar(String id, String correoUsuario) {
         MetaAhorro meta = metaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada"));
@@ -85,6 +102,7 @@ public class MetaAhorroService implements IMetaAhorroService {
                 .fechaObjetivo(meta.getFechaObjetivo())
                 .prioridad(meta.getPrioridad() != null ? meta.getPrioridad().name() : null)
                 .estado(meta.getEstado() != null ? meta.getEstado().name() : null)
+                .fechaCreacion(meta.getFechaCreacion()) 
                 .build();
     }
 }

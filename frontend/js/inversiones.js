@@ -39,8 +39,8 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
       usuario: { idUsuario: usuarioId },
       nombreActivo: document.getElementById("nombreActivo").value,
       tipoActivo: document.getElementById("tipoActivo").value,
-      montoInvertido: Number(document.getElementById("montoInvertido").value),
-      valorActual: Number(document.getElementById("valorActual").value),
+      montoInvertido: leerMonto("montoInvertido"),
+      valorActual: leerMonto("valorActual"),
       rentabilidad: rentabilidad === "" ? null : Number(rentabilidad),
       riesgo: document.getElementById("riesgo").value,
       fechaInversion: document.getElementById("fechaInversion").value,
@@ -58,8 +58,8 @@ function editar(id) {
   document.getElementById("id").value = i.idInversion;
   document.getElementById("nombreActivo").value = i.nombreActivo;
   document.getElementById("tipoActivo").value = i.tipoActivo;
-  document.getElementById("montoInvertido").value = i.montoInvertido;
-  document.getElementById("valorActual").value = i.valorActual;
+  ponerMonto("montoInvertido", i.montoInvertido);
+  ponerMonto("valorActual", i.valorActual);
   document.getElementById("rentabilidad").value = i.rentabilidad ?? "";
   document.getElementById("riesgo").value = i.riesgo;
   document.getElementById("fechaInversion").value = i.fechaInversion;

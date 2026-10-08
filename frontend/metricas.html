@@ -12,15 +12,21 @@
   <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-1">
       <h1 class="h3 mb-0">Métricas financieras</h1>
-      <button class="btn btn-primary" onclick="calcular()">Calcular ahora</button>
+      <button class="btn btn-primary" onclick="calcular()">Calcular este mes</button>
     </div>
-    <p class="text-muted">Resumen calculado por el sistema a partir de tus movimientos.</p>
+    <p class="text-muted">Un resumen de cómo te fue cada mes, calculado a partir de tus registros.</p>
     <div id="alerta"></div>
 
+    <!-- Métrica del mes más reciente -->
+    <h2 class="h5 mt-4 mb-3" id="tituloMes">Este mes</h2>
+    <div class="row g-3 mb-4" id="tarjetas"></div>
+
+    <!-- Historial mes a mes -->
+    <h2 class="h5 mb-3">Historial por mes</h2>
     <div class="card">
       <div class="card-body table-responsive">
         <table class="table table-hover align-middle mb-0">
-          <thead><tr><th>Fecha de cálculo</th><th class="text-end">Ingresos</th><th class="text-end">Gastos</th><th class="text-end">Flujo neto</th><th class="text-end">Tasa de ahorro</th><th class="text-end">Score</th><th>Riesgo</th></tr></thead>
+          <thead><tr><th>Mes</th><th class="text-end">Ingresos</th><th class="text-end">Gastos</th><th class="text-end">Flujo neto</th><th class="text-end">Tasa de ahorro</th><th class="text-end">Score</th><th>Riesgo</th></tr></thead>
           <tbody id="tabla"></tbody>
         </table>
       </div>

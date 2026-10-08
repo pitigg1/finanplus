@@ -9,5 +9,6 @@ public interface IMetricaFinancieraService {
     MetricaFinanciera findById(String id);
     MetricaFinanciera save(MetricaFinanciera metrica);
     void delete(String id);
+    MetricaFinanciera calcular(String idUsuario);
 
 }

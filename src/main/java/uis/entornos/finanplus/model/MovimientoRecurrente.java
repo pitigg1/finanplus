@@ -11,7 +11,7 @@ import uis.entornos.finanplus.enums.Frecuencia;
 import uis.entornos.finanplus.enums.TipoMovimiento;
 
 @Entity
-@Table(name = "Movimientos Recurrentes")
+@Table(name = "Movimientos_Recurrentes")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler",})
 public class MovimientoRecurrente {

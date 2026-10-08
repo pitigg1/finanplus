@@ -52,7 +52,7 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
     const datos = armarDatos(
       Number(document.getElementById("categoria").value),
       document.getElementById("tipo").value,
-      Number(document.getElementById("monto").value),
+      leerMonto("monto"),
       document.getElementById("frecuencia").value,
       document.getElementById("fecha").value,
       document.getElementById("activo").checked
@@ -81,7 +81,7 @@ function editar(id) {
   document.getElementById("id").value = m.idRecurrencia;
   document.getElementById("categoria").value = m.categoria.idCategoria;
   document.getElementById("tipo").value = m.tipoMovimiento;
-  document.getElementById("monto").value = m.montoEstimado;
+  ponerMonto("monto", m.montoEstimado);
   document.getElementById("frecuencia").value = m.frecuencia;
   document.getElementById("fecha").value = m.proximaFecha;
   document.getElementById("activo").checked = m.activo;

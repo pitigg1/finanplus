@@ -58,6 +58,7 @@ public class AuthService implements IAuthService{
                 .monedaPreferida(usuario.getMonedaPreferida())
                 .pais(usuario.getPais())
                 .estado(usuario.getEstado())
+                .fechaRegistro(usuario.getFechaRegistro())
                 .build();
 
         return AuthResponseDTO.builder()

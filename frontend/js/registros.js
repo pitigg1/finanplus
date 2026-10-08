@@ -1,56 +1,56 @@
 menu("registros.html");
 const usuarioId = exigirUsuario();
 let registros = [];
+let categorias = [];
 let etiquetas = [];
 
 async function iniciar() {
-  const categorias = await api("/categorias");
+  categorias = await api("/categorias");
   etiquetas = await api("/etiquetas");
   llenarSelect(document.getElementById("categoria"), categorias, "idCategoria", (c) => `${c.nombre} (${c.tipo})`, "-- Elige --");
+  pintarEtiquetasFormulario();
   limpiar();
   await cargar();
 }
 
-// LISTAR (cada registro con sus etiquetas: tabla Registro_Etiqueta)
-async function cargar() {
-  registros = await api(`/registros`);
-  
-  for (const r of registros) {
-    try {
-      r.etiquetas = await api(`/registros/${r.idRegistro}/etiquetas`);
-    } catch (e) {
-      r.etiquetas = []; // Si falla la carga de etiquetas, asigna un array vacío
-    }
-  }
+// Al elegir la categoría, el tipo se llena solo con el tipo de esa categoría
+document.getElementById("categoria").addEventListener("change", (e) => {
+  const categoria = categorias.find((c) => String(c.idCategoria) === e.target.value);
+  if (categoria) document.getElementById("tipo").value = categoria.tipo;
+});
 
+// Botones para marcar etiquetas en el formulario (tabla Registro_Etiqueta)
+function pintarEtiquetasFormulario() {
+  document.getElementById("etiquetasForm").innerHTML = etiquetas.length
+    ? etiquetas
+        .map(
+          (e) => `<input type="checkbox" class="btn-check" id="etq-${e.idEtiqueta}" value="${e.idEtiqueta}" autocomplete="off">
+            <label class="btn btn-outline-info btn-sm" for="etq-${e.idEtiqueta}">${esc(e.nombre)}</label>`
+        )
+        .join("")
+    : `<span class="text-muted small">No hay etiquetas. Créalas en <a href="etiquetas.html">Etiquetas</a>.</span>`;
+}
+
+// Ids de las etiquetas marcadas en el formulario
+function etiquetasMarcadas() {
+  return [...document.querySelectorAll("#etiquetasForm .btn-check:checked")].map((c) => Number(c.value));
+}
+
+// LISTAR
+async function cargar() {
+  registros = await api("/registros");
   document.getElementById("tabla").innerHTML =
     registros
       .map((r) => {
-        // Obtener el nombre de la categoría soportando objeto anidado o campo plano
-        const nombreCategoria = r.categoria?.nombre || r.nombreCategoria || "Sin categoría";
-        
-        // Etiquetas que ya tiene (con botón para quitar)
-        const puestas = (r.etiquetas || [])
-          .map((t) => `<span class="badge text-bg-info me-1">${esc(t.nombre)}
-             <a href="#" class="text-white text-decoration-none" onclick="quitarEtiqueta('${r.idRegistro}', ${t.idEtiqueta}); return false;">×</a></span>`)
-          .join("");
-
-        // Etiquetas que se le pueden agregar
-        const libres = etiquetas.filter((e) => !(r.etiquetas || []).some((t) => t.idEtiqueta === e.idEtiqueta));
-        const selector = libres.length
-          ? `<select class="form-select form-select-sm d-inline-block w-auto mt-1" onchange="ponerEtiqueta('${r.idRegistro}', this.value)">
-               <option value="">+ etiqueta</option>
-               ${libres.map((e) => `<option value="${e.idEtiqueta}">${esc(e.nombre)}</option>`).join("")}
-             </select>`
-          : "";
-
+        // el backend devuelve los nombres de las etiquetas del registro
+        const puestas = (r.etiquetas || []).map((nombre) => `<span class="badge text-bg-info me-1">${esc(nombre)}</span>`).join("");
         return `<tr>
           <td>${fecha(r.fechaMovimiento)}</td>
           <td>${r.tipoMovimiento}</td>
-          <td>${esc(nombreCategoria)}</td>
+          <td>${esc(r.nombreCategoria || "Sin categoría")}</td>
           <td>${esc(r.descripcion)}</td>
           <td class="text-end">${dinero(r.monto)}</td>
-          <td>${puestas} ${selector}</td>
+          <td>${puestas || '<span class="text-muted small">—</span>'}</td>
           <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-primary" onclick="editar('${r.idRegistro}')">Editar</button>
             <button class="btn btn-sm btn-outline-danger" onclick="eliminar('${r.idRegistro}')">Eliminar</button>
@@ -63,7 +63,7 @@ async function cargar() {
 // CREAR o ACTUALIZAR
 document.getElementById("formulario").addEventListener("submit", (e) => {
   e.preventDefault();
-  
+
   const idCategoriaVal = document.getElementById("categoria").value;
   if (!idCategoriaVal) {
     mensaje("Debes seleccionar una categoría", "warning");
@@ -74,14 +74,15 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
     const id = document.getElementById("id").value;
     const existente = registros.find((x) => x.idRegistro === id);
 
-    // DTO Plano esperado por RegistroFinancieroRequestDTO
+    // Estructura de RegistroFinancieroRequestDTO
     const datos = {
-      idCategoria: Number(idCategoriaVal), // <-- Campo plano en la raíz del JSON
+      idCategoria: Number(idCategoriaVal),
       tipoMovimiento: document.getElementById("tipo").value,
-      monto: Number(document.getElementById("monto").value),
+      monto: leerMonto("monto"),
       descripcion: document.getElementById("descripcion").value,
       fechaMovimiento: document.getElementById("fecha").value,
-      esRecurrente: existente ? existente.esRecurrente : false
+      esRecurrente: existente ? existente.esRecurrente : false,
+      idsEtiquetas: etiquetasMarcadas(), // lista vacía = sin etiquetas
     };
 
     if (id) {
@@ -100,15 +101,15 @@ function editar(id) {
   const r = registros.find((x) => x.idRegistro === id);
   if (!r) return;
 
-  // Obtener la ID de la categoría soportando objeto anidado o campo plano
-  const idCategoria = r.categoria?.idCategoria || r.idCategoria || "";
-
   document.getElementById("id").value = r.idRegistro;
-  document.getElementById("categoria").value = idCategoria;
+  document.getElementById("categoria").value = r.idCategoria;
   document.getElementById("tipo").value = r.tipoMovimiento;
-  document.getElementById("monto").value = r.monto;
+  ponerMonto("monto", r.monto);
   document.getElementById("descripcion").value = r.descripcion || "";
   document.getElementById("fecha").value = String(r.fechaMovimiento).slice(0, 16);
+  // marca las etiquetas que ya tiene (los nombres de etiqueta son únicos)
+  const nombres = r.etiquetas || [];
+  etiquetas.forEach((e) => (document.getElementById(`etq-${e.idEtiqueta}`).checked = nombres.includes(e.nombre)));
   document.getElementById("tituloForm").textContent = "Editar registro";
   window.scrollTo(0, 0);
 }
@@ -126,22 +127,6 @@ function eliminar(id) {
   intentar(async () => {
     await api(`/registros/${id}`, "DELETE");
     mensaje("Registro eliminado");
-    await cargar();
-  });
-}
-
-// ETIQUETAS DEL REGISTRO (tabla Registro_Etiqueta)
-function ponerEtiqueta(idRegistro, idEtiqueta) {
-  if (!idEtiqueta) return;
-  intentar(async () => {
-    await api(`/registros/${idRegistro}/etiquetas/${idEtiqueta}`, "POST");
-    await cargar();
-  });
-}
-
-function quitarEtiqueta(idRegistro, idEtiqueta) {
-  intentar(async () => {
-    await api(`/registros/${idRegistro}/etiquetas/${idEtiqueta}`, "DELETE");
     await cargar();
   });
 }

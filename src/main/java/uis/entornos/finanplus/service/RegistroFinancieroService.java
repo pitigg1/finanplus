@@ -147,7 +147,9 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
                 .descripcion(registro.getDescripcion())
                 .fechaMovimiento(registro.getFechaMovimiento())
                 .esRecurrente(registro.getEsRecurrente())
+                .createdAt(registro.getCreatedAt()) 
                 .etiquetas(nombresEtiquetas) // Inclusión en la respuesta DTO
+                
                 .build();
     }
 }

@@ -30,13 +30,12 @@
             <label class="form-label">Año</label>
             <input id="anio" type="number" min="2000" class="form-control" required>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-4">
             <label class="form-label">Límite</label>
-            <input id="limite" type="number" min="0" step="any" class="form-control" required>
+            <div class="input-group"><span class="input-group-text">$</span><input id="limite" type="text" inputmode="numeric" class="form-control monto" placeholder="0" required></div>
           </div>
-          <div class="col-md-2">
-            <label class="form-label">Gasto actual</label>
-            <input id="gastoActual" type="number" min="0" step="any" class="form-control" value="0">
+          <div class="col-12">
+            <small class="text-muted">Lo gastado se calcula solo: es la suma de tus registros de tipo GASTO en esa categoría durante ese mes.</small>
           </div>
           <div class="col-12">
             <button type="submit" class="btn btn-primary">Guardar</button>

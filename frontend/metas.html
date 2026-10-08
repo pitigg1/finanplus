@@ -28,7 +28,7 @@
           </div>
           <div class="col-md-4">
             <label class="form-label">Monto objetivo</label>
-            <input id="objetivo" type="number" min="1" step="any" class="form-control" required>
+            <div class="input-group"><span class="input-group-text">$</span><input id="objetivo" type="text" inputmode="numeric" class="form-control monto" placeholder="0" required></div>
           </div>
           <div class="col-md-4">
             <label class="form-label">Fecha objetivo</label>
@@ -74,11 +74,12 @@
         <form id="formAporte" class="row g-3 mb-3">
           <div class="col-md-4">
             <label class="form-label">Monto</label>
-            <input id="aporteMonto" type="number" min="1" step="any" class="form-control" required>
+            <div class="input-group"><span class="input-group-text">$</span><input id="aporteMonto" type="text" inputmode="numeric" class="form-control monto" placeholder="0" required></div>
           </div>
           <div class="col-md-4">
             <label class="form-label">Categoría (de ahorro)</label>
             <select id="aporteCategoria" class="form-select" required></select>
+            <div id="avisoAhorro" class="form-text"></div>
           </div>
           <div class="col-md-4 d-flex align-items-end">
             <button type="submit" class="btn btn-success">Agregar aporte</button>

@@ -9,4 +9,5 @@ public interface IMetaAhorroService {
     List<MetaAhorroResponseDTO> listarPorUsuario(String correoUsuario);
     MetaAhorroResponseDTO obtenerPorId(String id);
     void eliminar(String id, String correoUsuario);
+    MetaAhorroResponseDTO actualizar(String id, MetaAhorroRequestDTO request, String correoUsuario);
 }

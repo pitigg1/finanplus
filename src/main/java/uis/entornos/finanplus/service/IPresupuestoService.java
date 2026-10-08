@@ -9,4 +9,6 @@ public interface IPresupuestoService {
     List<PresupuestoResponseDTO> listarPorUsuario(String correoUsuario);
     PresupuestoResponseDTO obtenerPorId(String id);
     void eliminar(String id, String correoUsuario);
+    PresupuestoResponseDTO actualizar(String id, PresupuestoRequestDTO request, String correoUsuario);
 }
+

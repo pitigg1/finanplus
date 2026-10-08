@@ -13,6 +13,7 @@ public class MetaAhorroRequestDTO {
 	
 	@NotBlank(message = "El nombre de la meta es obligatorio")
     private String nombre;
+    
 
     private String descripcion;
 
@@ -23,4 +24,5 @@ public class MetaAhorroRequestDTO {
     private LocalDate fechaObjetivo;
 
     private String prioridad;
+    private String estado;
 }

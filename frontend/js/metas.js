@@ -4,16 +4,21 @@ let metas = [];
 let metaElegida = null; // meta cuyos aportes se están viendo
 
 async function iniciar() {
+  // Los aportes se guardan como un registro de tipo AHORRO, por eso solo sirven categorías de ese tipo
   const categorias = (await api("/categorias")).filter((c) => c.tipo === "AHORRO");
-  llenarSelect(document.getElementById("aporteCategoria"), categorias, "idCategoria", (c) => c.nombre, "-- Elige --");
+  llenarSelect(document.getElementById("aporteCategoria"), categorias, "idCategoria", (c) => c.nombre,
+    categorias.length ? "-- Elige --" : "-- No hay categorías de ahorro --");
+  document.getElementById("avisoAhorro").innerHTML = categorias.length
+    ? ""
+    : 'Para aportar necesitas una categoría de tipo <strong>AHORRO</strong>. <a href="categorias.html">Créala aquí</a>.';
   await cargar();
 }
 
 // ================= METAS =================
 
-// LISTAR
+// LISTAR (el backend sabe quién es el usuario por el token)
 async function cargar() {
-  metas = await api(`/metas/usuario/${usuarioId}`);
+  metas = await api("/metas");
   document.getElementById("tabla").innerHTML =
     metas
       .map((m) => {
@@ -44,11 +49,11 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
   e.preventDefault();
   intentar(async () => {
     const id = document.getElementById("id").value;
+    // Estructura de MetaAhorroRequestDTO (el usuario sale del token, no se envía)
     const datos = {
-      usuario: { idUsuario: usuarioId },
       nombre: document.getElementById("nombre").value,
       descripcion: document.getElementById("descripcion").value || null,
-      montoObjetivo: Number(document.getElementById("objetivo").value),
+      montoObjetivo: leerMonto("objetivo"),
       fechaObjetivo: document.getElementById("fechaObjetivo").value || null,
       prioridad: document.getElementById("prioridad").value,
       estado: document.getElementById("estado").value,
@@ -66,7 +71,7 @@ function editar(id) {
   document.getElementById("id").value = m.idMeta;
   document.getElementById("nombre").value = m.nombre;
   document.getElementById("descripcion").value = m.descripcion || "";
-  document.getElementById("objetivo").value = m.montoObjetivo;
+  ponerMonto("objetivo", m.montoObjetivo);
   document.getElementById("fechaObjetivo").value = m.fechaObjetivo || "";
   document.getElementById("prioridad").value = m.prioridad;
   document.getElementById("estado").value = m.estado;
@@ -125,20 +130,27 @@ document.getElementById("formAporte").addEventListener("submit", (e) => {
   e.preventDefault();
   intentar(async () => {
     const meta = metas.find((x) => x.idMeta === metaElegida);
-    const monto = Number(document.getElementById("aporteMonto").value);
+    const monto = leerMonto("aporteMonto");
+    // 1) Registro de tipo AHORRO (estructura de RegistroFinancieroRequestDTO)
     const registro = await api("/registros", "POST", {
-      usuario: { idUsuario: usuarioId },
-      categoria: { idCategoria: Number(document.getElementById("aporteCategoria").value) },
+      idCategoria: Number(document.getElementById("aporteCategoria").value),
       tipoMovimiento: "AHORRO",
       monto: monto,
       descripcion: "Aporte a meta: " + meta.nombre,
       fechaMovimiento: ahora(),
     });
-    await api("/aportes", "POST", {
-      meta: { idMeta: metaElegida },
-      registro: { idRegistro: registro.idRegistro },
-      monto: monto,
-    });
+    // 2) Aporte que enlaza el registro con la meta (el backend suma el monto a la meta)
+    try {
+      await api("/aportes", "POST", {
+        meta: { idMeta: metaElegida },
+        registro: { idRegistro: registro.idRegistro },
+        monto: monto,
+      });
+    } catch (error) {
+      // si el aporte falla, se borra el registro para no dejarlo suelto
+      await api(`/registros/${registro.idRegistro}`, "DELETE").catch(() => {});
+      throw error;
+    }
     mensaje("Aporte agregado");
     document.getElementById("formAporte").reset();
     await cargar();
@@ -148,10 +160,12 @@ document.getElementById("formAporte").addEventListener("submit", (e) => {
 
 // ACTUALIZAR un aporte
 function editarAporte(id, montoActual) {
-  const nuevo = prompt("Nuevo monto del aporte:", montoActual);
+  const nuevo = prompt("Nuevo monto del aporte:", Math.round(montoActual).toLocaleString("es-CO"));
   if (nuevo === null) return;
+  const valor = Number(nuevo.replace(/\D/g, ""));
+  if (!valor) return mensaje("Escribe un monto válido", "warning");
   intentar(async () => {
-    await api(`/aportes/${id}`, "PUT", { monto: Number(nuevo) });
+    await api(`/aportes/${id}`, "PUT", { monto: valor });
     mensaje("Aporte actualizado");
     await cargar();
     await cargarAportes();

@@ -54,7 +54,7 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
       idCategoria: Number(idCategoriaVal),
       mes: Number(document.getElementById("mes").value),
       anio: Number(document.getElementById("anio").value),
-      limiteGasto: Number(document.getElementById("limite").value)
+      limiteGasto: leerMonto("limite")
     };
 
     if (id) {
@@ -75,8 +75,7 @@ function editar(id) {
   document.getElementById("categoria").value = p.idCategoria;
   document.getElementById("mes").value = p.mes;
   document.getElementById("anio").value = p.anio;
-  document.getElementById("limite").value = p.limiteGasto;
-  document.getElementById("gastoActual").value = p.gastoActual;
+  ponerMonto("limite", p.limiteGasto);
   document.getElementById("tituloForm").textContent = "Editar presupuesto";
 }
 

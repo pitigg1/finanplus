@@ -32,6 +32,11 @@ public class MetricaFinancieraController {
     public ResponseEntity<MetricaFinanciera> create(@Valid @RequestBody MetricaFinanciera metrica) {
         return new ResponseEntity<>(metricaService.save(metrica), HttpStatus.CREATED);
     }
+    
+    @PostMapping("/usuario/{idUsuario}/calcular")
+    public ResponseEntity<MetricaFinanciera> calcular(@PathVariable String idUsuario) {
+        return new ResponseEntity<>(metricaService.calcular(idUsuario), HttpStatus.CREATED);
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable String id) {

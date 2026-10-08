@@ -42,6 +42,14 @@ public class MetaAhorroController {
         return ResponseEntity.ok(metaAhorroService.obtenerPorId(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<MetaAhorroResponseDTO> actualizar(
+            @PathVariable String id,
+            @Valid @RequestBody MetaAhorroRequestDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(metaAhorroService.actualizar(id, request, authentication.getName()));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(
             @PathVariable String id,

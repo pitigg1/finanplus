@@ -114,6 +114,41 @@ function dinero(valor) {
   return Number(valor ?? 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 }
 
+// ----- Campos de monto con puntos de miles (1500000 -> 1.500.000) -----
+// En el HTML se marcan con class="monto". Se ven con puntos, pero al backend se envía el número limpio.
+
+// Pone los puntos mientras se escribe, sin mover el cursor de lugar
+function formatearMonto(input) {
+  const posicion = input.selectionStart ?? input.value.length;
+  const digitosALaDerecha = input.value.slice(posicion).replace(/\D/g, "").length;
+  const digitos = input.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  input.value = digitos ? Number(digitos).toLocaleString("es-CO") : "";
+  // deja el cursor con la misma cantidad de dígitos a su derecha que antes
+  let i = input.value.length;
+  let contados = 0;
+  while (i > 0 && contados < digitosALaDerecha) {
+    i--;
+    if (/\d/.test(input.value[i])) contados++;
+  }
+  input.setSelectionRange(i, i);
+}
+
+// Lee un campo de monto y devuelve el número sin puntos ("1.500.000" -> 1500000)
+function leerMonto(id) {
+  const digitos = document.getElementById(id).value.replace(/\D/g, "");
+  return digitos ? Number(digitos) : 0;
+}
+
+// Escribe un número en un campo de monto ya formateado (1500000 -> "1.500.000")
+function ponerMonto(id, valor) {
+  document.getElementById(id).value = valor ? Math.round(Number(valor)).toLocaleString("es-CO") : "";
+}
+
+// Activa el formato en todos los campos con class="monto" de la página
+document.addEventListener("input", (e) => {
+  if (e.target.classList && e.target.classList.contains("monto")) formatearMonto(e.target);
+});
+
 // Formato fecha
 function fecha(valor) {
   return valor ? String(valor).replace("T", " ").slice(0, 16) : "";

@@ -27,21 +27,21 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
   e.preventDefault();
   intentar(async () => {
     const id = document.getElementById("id").value;
-    const existente = usuarios.find((x) => x.idUsuario === id);
-    const password = document.getElementById("password").value;
-    if (!id && !password) throw new Error("La contraseña es obligatoria para un usuario nuevo");
+    // Los usuarios nuevos se crean desde la pantalla de registro (login.html)
+    if (!id) {
+      mensaje("Para crear un usuario nuevo usa el registro en la pantalla de inicio de sesión. Aquí puedes editar con el botón Editar.", "warning");
+      return;
+    }
+    // Estructura de ActualizarUsuarioDTO (el correo no se cambia)
     const datos = {
       nombre: document.getElementById("nombre").value,
-      correo: document.getElementById("correo").value,
-      // al editar, si no se escribe contraseña se deja la que tenía
-      passwordHash: password || (existente ? existente.passwordHash : ""),
       monedaPreferida: document.getElementById("moneda").value,
       pais: document.getElementById("pais").value,
       estado: document.getElementById("estado").value,
+      password: document.getElementById("password").value, // vacía = se conserva la actual
     };
-    if (id) await api(`/usuarios/${id}`, "PUT", datos);
-    else await api("/usuarios", "POST", datos);
-    mensaje(id ? "Usuario actualizado" : "Usuario creado");
+    await api(`/usuarios/${id}`, "PUT", datos);
+    mensaje("Usuario actualizado");
     limpiar();
     await cargar();
   });

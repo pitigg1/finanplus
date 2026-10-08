@@ -30,10 +30,14 @@
               <option>AHORRO</option>
               <option>INVERSION</option>
             </select>
+            <div class="form-text">Se llena según la categoría</div>
           </div>
           <div class="col-md-2">
             <label class="form-label">Monto</label>
-            <input id="monto" type="number" min="0" step="any" class="form-control" required>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input id="monto" type="text" inputmode="numeric" class="form-control monto" placeholder="0" required>
+            </div>
           </div>
           <div class="col-md-4">
             <label class="form-label">Fecha</label>
@@ -42,6 +46,10 @@
           <div class="col-12">
             <label class="form-label">Descripción</label>
             <input id="descripcion" class="form-control" maxlength="255">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Etiquetas <small class="text-muted">(opcional, puedes marcar varias)</small></label>
+            <div id="etiquetasForm" class="d-flex flex-wrap gap-2"></div>
           </div>
           <div class="col-12">
             <button type="submit" class="btn btn-primary">Guardar</button>

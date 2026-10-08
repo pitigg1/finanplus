@@ -39,6 +39,14 @@ public class PresupuestoController {
         return ResponseEntity.ok(presupuestoService.obtenerPorId(id));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PresupuestoResponseDTO> actualizar(
+            @PathVariable String id,
+            @Valid @RequestBody PresupuestoRequestDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(presupuestoService.actualizar(id, request, authentication.getName()));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(
             @PathVariable String id,

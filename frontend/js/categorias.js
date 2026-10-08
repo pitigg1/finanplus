@@ -1,6 +1,45 @@
 menu("categorias.html");
 let categorias = [];
 
+// Íconos para elegir con un clic (se guardan como emoji en la columna "icono")
+const ICONOS = [
+  ["🍔", "Comida"], ["🛒", "Mercado"], ["⛽", "Gasolina"], ["🚌", "Transporte"], ["🏠", "Arriendo"],
+  ["💡", "Servicios"], ["📱", "Celular e internet"], ["🎬", "Entretenimiento"], ["🎓", "Educación"], ["💊", "Salud"],
+  ["👕", "Ropa"], ["🎁", "Regalos"], ["✈️", "Viajes"], ["🐶", "Mascotas"], ["🔧", "Reparaciones"],
+  ["🧾", "Impuestos"], ["💳", "Tarjeta de crédito"], ["💼", "Salario"], ["💻", "Freelance"], ["💰", "Ahorro"],
+  ["🐷", "Alcancía"], ["📈", "Inversión"], ["🏦", "Banco"], ["❓", "Otro"],
+];
+
+// Colores sugeridos (también se puede elegir cualquiera con el selector)
+const COLORES = ["#0d6efd", "#6610f2", "#d63384", "#dc3545", "#fd7e14", "#ffc107", "#198754", "#20c997", "#0dcaf0", "#6c757d"];
+
+function pintarIconos() {
+  document.getElementById("iconos").innerHTML = ICONOS.map(
+    ([emoji, nombre]) =>
+      `<button type="button" class="btn btn-outline-secondary fs-5 px-2 py-1" title="${nombre}" data-icono="${emoji}" onclick="elegirIcono('${emoji}')">${emoji}</button>`
+  ).join("");
+}
+
+function elegirIcono(emoji) {
+  // si se vuelve a pulsar el mismo ícono, se quita
+  const actual = document.getElementById("icono").value;
+  const nuevo = actual === emoji ? "" : emoji;
+  document.getElementById("icono").value = nuevo;
+  document.getElementById("iconoElegido").textContent = nuevo || "—";
+  document.querySelectorAll("#iconos button").forEach((b) => {
+    b.classList.toggle("btn-primary", b.dataset.icono === nuevo);
+    b.classList.toggle("btn-outline-secondary", b.dataset.icono !== nuevo);
+  });
+}
+
+function pintarPaleta() {
+  document.getElementById("paleta").innerHTML = COLORES.map(
+    (c) =>
+      `<button type="button" class="btn border rounded-circle p-0" style="width:28px;height:28px;background:${c}" title="${c}"
+        onclick="document.getElementById('color').value='${c}'"></button>`
+  ).join("");
+}
+
 // LISTAR
 async function cargar() {
   categorias = await api("/categorias");
@@ -11,9 +50,13 @@ async function cargar() {
           <td>${c.idCategoria}</td>
           <td>${esc(c.nombre)}</td>
           <td><span class="badge text-bg-secondary">${c.tipo}</span></td>
-          <td>${esc(c.icono)}</td>
-          <td>${esc(c.color)}</td>
-          <td class="text-end">
+          <td class="fs-5">${esc(c.icono) || '<span class="text-muted small">—</span>'}</td>
+          <td>${
+            c.color
+              ? `<span class="d-inline-block rounded-circle border align-middle" style="width:22px;height:22px;background:${esc(c.color)}" title="${esc(c.color)}"></span>`
+              : '<span class="text-muted small">—</span>'
+          }</td>
+          <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-primary" onclick="editar(${c.idCategoria})">Editar</button>
             <button class="btn btn-sm btn-outline-danger" onclick="eliminar(${c.idCategoria})">Eliminar</button>
           </td>
@@ -46,14 +89,19 @@ function editar(id) {
   document.getElementById("id").value = c.idCategoria;
   document.getElementById("nombre").value = c.nombre;
   document.getElementById("tipo").value = c.tipo;
-  document.getElementById("icono").value = c.icono || "";
-  document.getElementById("color").value = c.color || "";
+  document.getElementById("icono").value = "";
+  elegirIcono(c.icono || "");
+  document.getElementById("color").value = /^#[0-9a-fA-F]{6}$/.test(c.color || "") ? c.color : "#0d6efd";
   document.getElementById("tituloForm").textContent = "Editar categoría";
+  window.scrollTo(0, 0);
 }
 
 function limpiar() {
   document.getElementById("formulario").reset();
   document.getElementById("id").value = "";
+  document.getElementById("icono").value = "";
+  elegirIcono("");
+  document.getElementById("color").value = "#0d6efd";
   document.getElementById("tituloForm").textContent = "Nueva categoría";
 }
 
@@ -67,4 +115,6 @@ function eliminar(id) {
   });
 }
 
+pintarIconos();
+pintarPaleta();
 intentar(cargar);
