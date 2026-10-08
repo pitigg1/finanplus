@@ -9,4 +9,5 @@ public interface IRegistroFinancieroService {
     List<RegistroFinancieroResponseDTO> listarPorUsuario(String correoUsuario);
     RegistroFinancieroResponseDTO obtenerPorId(String id);
     void eliminar(String id, String correoUsuario);
+    RegistroFinancieroResponseDTO actualizar(String id, RegistroFinancieroRequestDTO request, String correoUsuario);
 }

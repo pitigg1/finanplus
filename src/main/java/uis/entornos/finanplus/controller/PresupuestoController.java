@@ -29,7 +29,7 @@ public class PresupuestoController {
         );
     }
 
-    @GetMapping
+    @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity<List<PresupuestoResponseDTO>> listarPorUsuario(Authentication authentication) {
         return ResponseEntity.ok(presupuestoService.listarPorUsuario(authentication.getName()));
     }

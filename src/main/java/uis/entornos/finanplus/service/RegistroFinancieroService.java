@@ -90,4 +90,39 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
                 .esRecurrente(registro.getEsRecurrente())
                 .build();
     }
+    
+    @Override
+    public RegistroFinancieroResponseDTO actualizar(String id, RegistroFinancieroRequestDTO request, String correoUsuario) {
+        // 1. Buscar el registro existente
+        RegistroFinanciero registroExistente = registroRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Registro financiero no encontrado con ID: " + id));
+        
+        // 2. Verificar que el registro pertenezca al usuario autenticado
+        if (!registroExistente.getUsuario().getCorreo().equalsIgnoreCase(correoUsuario)) {
+            throw new RuntimeException("No tiene permisos para modificar este registro");
+        }
+        // 3. Buscar la nueva categoría
+        Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
+
+        // 4. Determinar el tipo de movimiento
+        TipoMovimiento tipoMovimiento;
+        try {
+            tipoMovimiento = TipoMovimiento.valueOf(request.getTipoMovimiento().toUpperCase());
+        } catch (Exception e) {
+            tipoMovimiento = TipoMovimiento.GASTO;
+        }
+
+        // 5. Actualizar los datos del registro
+        registroExistente.setCategoria(categoria);
+        registroExistente.setTipoMovimiento(tipoMovimiento);
+        registroExistente.setMonto(request.getMonto());
+        registroExistente.setDescripcion(request.getDescripcion());
+        registroExistente.setFechaMovimiento(request.getFechaMovimiento());
+        registroExistente.setEsRecurrente(Boolean.TRUE.equals(request.getEsRecurrente()));
+
+        // 6. Guardar y retornar DTO
+        RegistroFinanciero actualizado = registroRepository.save(registroExistente);
+        return mapearAResponseDTO(actualizado);
+    }
 }

@@ -2,6 +2,7 @@ package uis.entornos.finanplus.dto;
 
 import java.math.BigDecimal;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +10,7 @@ import lombok.Data;
 
 @Data
 public class PresupuestoRequestDTO {
+	
 	@NotNull(message = "La categoría es obligatoria")
     private Integer idCategoria;
 
@@ -21,6 +23,6 @@ public class PresupuestoRequestDTO {
     private Integer anio;
 
     @NotNull(message = "El límite de gasto es obligatorio")
-    @Min(value = 0, message = "El límite de gasto no puede ser negativo")
+    @DecimalMin(value = "0.0",  message = "El límite de gasto no puede ser negativo")
     private BigDecimal limiteGasto;
 }

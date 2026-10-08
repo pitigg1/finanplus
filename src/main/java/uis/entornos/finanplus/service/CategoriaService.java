@@ -54,4 +54,26 @@ public class CategoriaService implements ICategoriaService {
                 .color(categoria.getColor())
                 .build();
     }
+    
+    @Override
+    public CategoriaResponseDTO actualizar(Integer id, CategoriaRequestDTO dto) {
+        Categoria categoriaExistente = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
+
+        categoriaExistente.setNombre(dto.getNombre());
+        categoriaExistente.setTipo(TipoMovimiento.valueOf(dto.getTipo().toUpperCase()));
+        categoriaExistente.setIcono(dto.getIcono());
+        categoriaExistente.setColor(dto.getColor());
+
+        Categoria actualizada = categoriaRepository.save(categoriaExistente);
+        return mapearAResponseDTO(actualizada);
+    }
+    
+    @Override
+    public void eliminar(Integer id) {
+        if (!categoriaRepository.existsById(id)) {
+            throw new RuntimeException("Categoría no encontrada con ID: " + id);
+        }
+        categoriaRepository.deleteById(id);
+    }
 }

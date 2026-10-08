@@ -8,4 +8,6 @@ public interface ICategoriaService {
     List<CategoriaResponseDTO> listarTodas();
     CategoriaResponseDTO obtenerPorId(Integer id);
     CategoriaResponseDTO crear(CategoriaRequestDTO dto);
+    CategoriaResponseDTO actualizar(Integer id, CategoriaRequestDTO dto);
+    void eliminar(Integer id);
 }

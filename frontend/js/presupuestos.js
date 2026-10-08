@@ -19,7 +19,7 @@ async function cargar() {
         // verde si va bien, amarillo desde el 80 %, rojo si se pasó
         const color = porcentaje > 100 ? "bg-danger" : porcentaje >= 80 ? "bg-warning" : "bg-success";
         return `<tr>
-          <td>${esc(p.categoria.nombre)}</td>
+          <td>${esc(p.nombreCategoria)}</td>
           <td>${p.mes}/${p.anio}</td>
           <td class="text-end">${dinero(p.limiteGasto)}</td>
           <td class="text-end">${dinero(p.gastoActual)}</td>
@@ -42,16 +42,27 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
   e.preventDefault();
   intentar(async () => {
     const id = document.getElementById("id").value;
+
+    const idCategoriaVal = document.getElementById("categoria").value;
+    if (!idCategoriaVal) {
+      alert("Por favor selecciona una categoría");
+      return;
+    }
+
+    // Estrutura exacta que espera PresupuestoRequestDTO en Spring Boot
     const datos = {
-      usuario: { idUsuario: usuarioId },
-      categoria: { idCategoria: Number(document.getElementById("categoria").value) },
+      idCategoria: Number(idCategoriaVal),
       mes: Number(document.getElementById("mes").value),
       anio: Number(document.getElementById("anio").value),
-      limiteGasto: Number(document.getElementById("limite").value),
-      gastoActual: Number(document.getElementById("gastoActual").value || 0),
+      limiteGasto: Number(document.getElementById("limite").value)
     };
-    if (id) await api(`/presupuestos/${id}`, "PUT", datos);
-    else await api("/presupuestos", "POST", datos);
+
+    if (id) {
+      await api(`/presupuestos/${id}`, "PUT", datos);
+    } else {
+      await api("/presupuestos", "POST", datos);
+    }
+
     mensaje(id ? "Presupuesto actualizado" : "Presupuesto creado");
     limpiar();
     await cargar();
@@ -61,7 +72,7 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
 function editar(id) {
   const p = presupuestos.find((x) => x.idPresupuesto === id);
   document.getElementById("id").value = p.idPresupuesto;
-  document.getElementById("categoria").value = p.categoria.idCategoria;
+  document.getElementById("categoria").value = p.idCategoria;
   document.getElementById("mes").value = p.mes;
   document.getElementById("anio").value = p.anio;
   document.getElementById("limite").value = p.limiteGasto;
