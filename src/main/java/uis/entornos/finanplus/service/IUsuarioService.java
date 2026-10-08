@@ -1,13 +1,10 @@
 package uis.entornos.finanplus.service;
 
+import uis.entornos.finanplus.dto.UsuarioResponseDTO;
 import java.util.List;
 
-import uis.entornos.finanplus.model.Usuario;
-
 public interface IUsuarioService {
-	List<Usuario> findAll();
-    Usuario findById(String id);
-    Usuario save(Usuario usuario);
-    Usuario update(String id, Usuario usuario);
-    void delete(String id);
+    List<UsuarioResponseDTO> listarTodos();
+    UsuarioResponseDTO obtenerPorCorreo(String correo);
+    UsuarioResponseDTO obtenerPorId(String id);
 }

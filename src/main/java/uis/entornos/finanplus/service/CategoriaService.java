@@ -1,45 +1,57 @@
 package uis.entornos.finanplus.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import uis.entornos.finanplus.dto.CategoriaRequestDTO;
+import uis.entornos.finanplus.dto.CategoriaResponseDTO;
+import uis.entornos.finanplus.enums.TipoMovimiento;
 import uis.entornos.finanplus.model.Categoria;
 import uis.entornos.finanplus.repository.CategoriaRepository;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CategoriaService implements ICategoriaService {
 
-    private final CategoriaRepository repository;
-
+    private final CategoriaRepository categoriaRepository;
+    
     @Override
-    public List<Categoria> findAll() { return repository.findAll(); }
+    public CategoriaResponseDTO crear(CategoriaRequestDTO dto) {
+        Categoria categoria = Categoria.builder()
+                .nombre(dto.getNombre())
+                .tipo(TipoMovimiento.valueOf(dto.getTipo().toUpperCase())) // Convierte "INGRESO"/"GASTO" al Enum
+                .icono(dto.getIcono())
+                .color(dto.getColor())
+                .build();
 
-    @Override
-    public Categoria findById(Integer id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        Categoria guardada = categoriaRepository.save(categoria);
+        return mapearAResponseDTO(guardada);
     }
 
     @Override
-    @Transactional
-    public Categoria save(Categoria categoria) {
-    	return repository.save(categoria);
+    public List<CategoriaResponseDTO> listarTodas() {
+        return categoriaRepository.findAll().stream()
+                .map(this::mapearAResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional
-    public Categoria update(Integer id, Categoria categoria) {
-        Categoria existente = findById(id);
-        existente.setNombre(categoria.getNombre());
-        existente.setTipo(categoria.getTipo());
-        existente.setIcono(categoria.getIcono());
-        existente.setColor(categoria.getColor());
-        return repository.save(existente);
+    public CategoriaResponseDTO obtenerPorId(Integer id) {
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        return mapearAResponseDTO(categoria);
     }
 
-    @Override
-    @Transactional
-    public void delete(Integer id) { repository.deleteById(id); }
+    private CategoriaResponseDTO mapearAResponseDTO(Categoria categoria) {
+        return CategoriaResponseDTO.builder()
+                .idCategoria(categoria.getIdCategoria())
+                .nombre(categoria.getNombre())
+                .tipo(categoria.getTipo().name())
+                .icono(categoria.getIcono())
+                .color(categoria.getColor())
+                .build();
+    }
 }

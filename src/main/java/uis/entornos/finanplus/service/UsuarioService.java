@@ -1,55 +1,51 @@
 package uis.entornos.finanplus.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import uis.entornos.finanplus.dto.UsuarioResponseDTO;
 import uis.entornos.finanplus.model.Usuario;
 import uis.entornos.finanplus.repository.UsuarioRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UsuarioService implements IUsuarioService {
-	private final UsuarioRepository repository;
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<Usuario> findAll() {
-		return repository.findAll();
-	}
+    private final UsuarioRepository usuarioRepository;
 
-	@Override
-	@Transactional(readOnly = true)
-    public Usuario findById(String id) {
-        return repository.findById(id)
+    @Override
+    public List<UsuarioResponseDTO> listarTodos() {
+        return usuarioRepository.findAll().stream()
+                .map(this::mapearAResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UsuarioResponseDTO obtenerPorCorreo(String correo) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con correo: " + correo));
+        return mapearAResponseDTO(usuario);
+    }
+
+    @Override
+    public UsuarioResponseDTO obtenerPorId(String id) {
+        Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        return mapearAResponseDTO(usuario);
     }
 
-	@Override
-	@Transactional
-    public Usuario save(Usuario usuario) {
-        if(repository.existsByCorreo(usuario.getCorreo())){
-            throw new RuntimeException("El correo ya está registrado");
-        }
-        return repository.save(usuario);
-    }
-	@Override
-	@Transactional
-    public Usuario update(String id, Usuario usuario) {
-        Usuario existente = findById(id);
-        existente.setNombre(usuario.getNombre());
-        existente.setMonedaPreferida(usuario.getMonedaPreferida());
-        existente.setPais(usuario.getPais());
-        existente.setFotoPerfil(usuario.getFotoPerfil());
-        existente.setEstado(usuario.getEstado());
-        return repository.save(existente);
-    }
-
-	@Override
-	@Transactional
-    public void delete(String id) {
-        repository.deleteById(id);
+    private UsuarioResponseDTO mapearAResponseDTO(Usuario usuario) {
+        return UsuarioResponseDTO.builder()
+                .idUsuario(usuario.getIdUsuario())
+                .nombre(usuario.getNombre())
+                .correo(usuario.getCorreo())
+                .monedaPreferida(usuario.getMonedaPreferida())
+                .pais(usuario.getPais())
+                .fotoPerfil(usuario.getFotoPerfil())
+                .estado(usuario.getEstado())
+                .fechaRegistro(usuario.getFechaRegistro())
+                .build();
     }
 }

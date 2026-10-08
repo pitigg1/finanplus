@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-	// Define esta clave en tu application.properties: jwt.secret=TU_CLAVE_SUPER_SECRETA_DE_AL_MENOS_256_BITS
+
     @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
     private String secretKey;
 

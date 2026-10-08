@@ -1,13 +1,12 @@
 package uis.entornos.finanplus.service;
 
+import uis.entornos.finanplus.dto.PresupuestoRequestDTO;
+import uis.entornos.finanplus.dto.PresupuestoResponseDTO;
 import java.util.List;
 
-import uis.entornos.finanplus.model.Presupuesto;
-
 public interface IPresupuestoService {
-    List<Presupuesto> findAllByUsuario(String idUsuario);
-    Presupuesto findById(String id);
-    Presupuesto save(Presupuesto presupuesto);
-    Presupuesto update(String id, Presupuesto presupuesto);
-    void delete(String id);
+    PresupuestoResponseDTO crear(PresupuestoRequestDTO request, String correoUsuario);
+    List<PresupuestoResponseDTO> listarPorUsuario(String correoUsuario);
+    PresupuestoResponseDTO obtenerPorId(String id);
+    void eliminar(String id, String correoUsuario);
 }

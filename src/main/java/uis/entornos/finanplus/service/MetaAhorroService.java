@@ -1,64 +1,90 @@
 package uis.entornos.finanplus.service;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import uis.entornos.finanplus.dto.MetaAhorroRequestDTO;
+import uis.entornos.finanplus.dto.MetaAhorroResponseDTO;
 import uis.entornos.finanplus.enums.EstadoMeta;
+import uis.entornos.finanplus.enums.Prioridad;
 import uis.entornos.finanplus.model.MetaAhorro;
 import uis.entornos.finanplus.model.Usuario;
 import uis.entornos.finanplus.repository.MetaAhorroRepository;
 import uis.entornos.finanplus.repository.UsuarioRepository;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class MetaAhorroService implements IMetaAhorroService {
 
-    private final MetaAhorroRepository repository;
+    private final MetaAhorroRepository metaRepository;
     private final UsuarioRepository usuarioRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    public List<MetaAhorro> findAllByUsuario(String idUsuario) {
-        return repository.findByUsuarioIdUsuario(idUsuario);
+    public MetaAhorroResponseDTO crear(MetaAhorroRequestDTO request, String correoUsuario) {
+        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con correo: " + correoUsuario));
+
+        Prioridad prioridad;
+        try {
+            prioridad = request.getPrioridad() != null 
+                    ? Prioridad.valueOf(request.getPrioridad().toUpperCase()) 
+                    : Prioridad.MEDIA;
+        } catch (Exception e) {
+            prioridad = Prioridad.MEDIA;
+        }
+
+        MetaAhorro meta = MetaAhorro.builder()
+                .usuario(usuario)
+                .nombre(request.getNombre())
+                .descripcion(request.getDescripcion())
+                .montoObjetivo(request.getMontoObjetivo())
+                .montoActual(BigDecimal.ZERO)
+                .fechaObjetivo(request.getFechaObjetivo())
+                .prioridad(prioridad)
+                .estado(EstadoMeta.ACTIVA)
+                .build();
+
+        MetaAhorro guardada = metaRepository.save(meta);
+        return mapearAResponseDTO(guardada);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public MetaAhorro findById(String id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada"));
+    public List<MetaAhorroResponseDTO> listarPorUsuario(String correoUsuario) {
+        return metaRepository.findByUsuarioCorreo(correoUsuario).stream()
+                .map(this::mapearAResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional
-    public MetaAhorro save(MetaAhorro meta) {
-        Usuario usuario = usuarioRepository.findById(meta.getUsuario().getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        meta.setUsuario(usuario);
-        meta.setMontoActual(BigDecimal.ZERO);
-        meta.setEstado(EstadoMeta.ACTIVA);
-        return repository.save(meta);
+    public MetaAhorroResponseDTO obtenerPorId(String id) {
+        MetaAhorro meta = metaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada con ID: " + id));
+        return mapearAResponseDTO(meta);
     }
 
     @Override
-    @Transactional
-    public MetaAhorro update(String id, MetaAhorro meta) {
-        MetaAhorro existente = findById(id);
-        existente.setNombre(meta.getNombre());
-        existente.setDescripcion(meta.getDescripcion());
-        existente.setMontoObjetivo(meta.getMontoObjetivo());
-        existente.setFechaObjetivo(meta.getFechaObjetivo());
-        existente.setPrioridad(meta.getPrioridad());
-        if (meta.getEstado() != null) existente.setEstado(meta.getEstado());
-        return repository.save(existente);
+    public void eliminar(String id, String correoUsuario) {
+        MetaAhorro meta = metaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada"));
+        if (!meta.getUsuario().getCorreo().equalsIgnoreCase(correoUsuario)) {
+            throw new RuntimeException("No tiene permisos para eliminar esta meta");
+        }
+        metaRepository.deleteById(id);
     }
 
-    @Override
-    @Transactional
-    public void delete(String id) {
-        repository.delete(findById(id));
+    private MetaAhorroResponseDTO mapearAResponseDTO(MetaAhorro meta) {
+        return MetaAhorroResponseDTO.builder()
+                .idMeta(meta.getIdMeta())
+                .nombre(meta.getNombre())
+                .descripcion(meta.getDescripcion())
+                .montoObjetivo(meta.getMontoObjetivo())
+                .montoActual(meta.getMontoActual())
+                .fechaObjetivo(meta.getFechaObjetivo())
+                .prioridad(meta.getPrioridad() != null ? meta.getPrioridad().name() : null)
+                .estado(meta.getEstado() != null ? meta.getEstado().name() : null)
+                .build();
     }
 }

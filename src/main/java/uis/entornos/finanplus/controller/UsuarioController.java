@@ -1,55 +1,33 @@
 package uis.entornos.finanplus.controller;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import uis.entornos.finanplus.model.Usuario;
-import uis.entornos.finanplus.service.UsuarioService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import uis.entornos.finanplus.dto.UsuarioResponseDTO;
+import uis.entornos.finanplus.service.IUsuarioService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
-@Tag(name = "Usuarios", description = "Endpoints para la gestión de usuarios")
 public class UsuarioController {
 
-    private final UsuarioService service;
+    private final IUsuarioService usuarioService;
 
-    @GetMapping
-    @Operation(summary = "Listar todos los usuarios")
-    public ResponseEntity<List<Usuario>> getAll() {
-        return ResponseEntity.ok(service.findAll());
+    @GetMapping("/perfil")
+    public ResponseEntity<UsuarioResponseDTO> obtenerPerfilActual(Authentication authentication) {
+        return ResponseEntity.ok(usuarioService.obtenerPorCorreo(authentication.getName()));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener usuario por ID")
-    public ResponseEntity<Usuario> getById(@PathVariable String id) {
-        return ResponseEntity.ok(service.findById(id));
+    public ResponseEntity<UsuarioResponseDTO> obtenerPorId(@PathVariable String id) {
+        return ResponseEntity.ok(usuarioService.obtenerPorId(id));
     }
 
-    @PostMapping
-    @Operation(summary = "Crear un nuevo usuario")
-    public ResponseEntity<Usuario> create(@Valid @RequestBody Usuario usuario) {
-        return new ResponseEntity<>(service.save(usuario), HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Actualizar un usuario existente")
-    public ResponseEntity<Usuario> update(@PathVariable String id, @Valid @RequestBody Usuario usuario) {
-        return ResponseEntity.ok(service.update(id, usuario));
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar un usuario")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodos() {
+        return ResponseEntity.ok(usuarioService.listarTodos());
     }
 }

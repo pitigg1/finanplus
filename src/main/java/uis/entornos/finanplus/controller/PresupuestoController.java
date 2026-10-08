@@ -1,49 +1,49 @@
 package uis.entornos.finanplus.controller;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import uis.entornos.finanplus.model.Presupuesto;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import uis.entornos.finanplus.dto.PresupuestoRequestDTO;
+import uis.entornos.finanplus.dto.PresupuestoResponseDTO;
 import uis.entornos.finanplus.service.IPresupuestoService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/presupuestos")
 @RequiredArgsConstructor
-@Tag(name = "Presupuestos", description = "Endpoints para gestionar presupuestos mensuales")
 public class PresupuestoController {
 
-    private final IPresupuestoService service;
+    private final IPresupuestoService presupuestoService;
 
-    @GetMapping("/usuario/{idUsuario}")
-    @Operation(summary = "Listar presupuestos de un usuario")
-    public ResponseEntity<List<Presupuesto>> getByUsuario(@PathVariable String idUsuario) {
-        return ResponseEntity.ok(service.findAllByUsuario(idUsuario));
+    @PostMapping
+    public ResponseEntity<PresupuestoResponseDTO> crear(
+            @Valid @RequestBody PresupuestoRequestDTO request,
+            Authentication authentication) {
+        return new ResponseEntity<>(
+                presupuestoService.crear(request, authentication.getName()),
+                HttpStatus.CREATED
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PresupuestoResponseDTO>> listarPorUsuario(Authentication authentication) {
+        return ResponseEntity.ok(presupuestoService.listarPorUsuario(authentication.getName()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Presupuesto> getById(@PathVariable String id) { return ResponseEntity.ok(service.findById(id)); }
-
-    @PostMapping
-    @Operation(summary = "Crear presupuesto")
-    public ResponseEntity<Presupuesto> create(@Valid @RequestBody Presupuesto presupuesto) {
-        return new ResponseEntity<>(service.save(presupuesto), HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Presupuesto> update(@PathVariable String id, @Valid @RequestBody Presupuesto presupuesto) {
-        return ResponseEntity.ok(service.update(id, presupuesto));
+    public ResponseEntity<PresupuestoResponseDTO> obtenerPorId(@PathVariable String id) {
+        return ResponseEntity.ok(presupuestoService.obtenerPorId(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        service.delete(id);
+    public ResponseEntity<Void> eliminar(
+            @PathVariable String id,
+            Authentication authentication) {
+        presupuestoService.eliminar(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

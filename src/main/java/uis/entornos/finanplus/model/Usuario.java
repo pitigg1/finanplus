@@ -1,6 +1,10 @@
 package uis.entornos.finanplus.model;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import uis.entornos.finanplus.enums.EstadoUsuario;
 
 @Entity
@@ -26,7 +31,7 @@ import uis.entornos.finanplus.enums.EstadoUsuario;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Usuario {
+public class Usuario implements UserDetails{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -68,4 +73,41 @@ public class Usuario {
 	protected void onCreate() {
 		this.fechaRegistro = LocalDateTime.now();
 	}
+	
+	// --- Métodos requeridos por UserDetails ---
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList(); 
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.correo;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.estado == EstadoUsuario.ACTIVO;
+    }
 }

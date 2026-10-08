@@ -1,48 +1,49 @@
 package uis.entornos.finanplus.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import uis.entornos.finanplus.model.RegistroFinanciero;
-import uis.entornos.finanplus.service.RegistroFinancieroService;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import uis.entornos.finanplus.dto.RegistroFinancieroRequestDTO;
+import uis.entornos.finanplus.dto.RegistroFinancieroResponseDTO;
+import uis.entornos.finanplus.service.IRegistroFinancieroService;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/registros")
 @RequiredArgsConstructor
-@Tag(name = "Registros Financieros", description = "Endpoints para ingresos y gastos")
 public class RegistroFinancieroController {
-	private final RegistroFinancieroService service;
 
-    @GetMapping("/usuario/{idUsuario}")
-    @Operation(summary = "Obtener registros por ID de usuario")
-    public ResponseEntity<List<RegistroFinanciero>> getByUsuario(@PathVariable String idUsuario) {
-        return ResponseEntity.ok(service.findAllByUsuario(idUsuario));
+    private final IRegistroFinancieroService registroFinancieroService;
+
+    @PostMapping
+    public ResponseEntity<RegistroFinancieroResponseDTO> crear(
+            @Valid @RequestBody RegistroFinancieroRequestDTO request,
+            Authentication authentication) {
+        return new ResponseEntity<>(
+                registroFinancieroService.crear(request, authentication.getName()),
+                HttpStatus.CREATED
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<List<RegistroFinancieroResponseDTO>> listarPorUsuario(Authentication authentication) {
+        return ResponseEntity.ok(registroFinancieroService.listarPorUsuario(authentication.getName()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RegistroFinanciero> getById(@PathVariable String id) {
-        return ResponseEntity.ok(service.findById(id));
-    }
-
-    @PostMapping
-    public ResponseEntity<RegistroFinanciero> create(@Valid @RequestBody RegistroFinanciero registro) {
-        return new ResponseEntity<>(service.save(registro), HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<RegistroFinanciero> update(@PathVariable String id, @Valid @RequestBody RegistroFinanciero registro) {
-        return ResponseEntity.ok(service.update(id, registro));
+    public ResponseEntity<RegistroFinancieroResponseDTO> obtenerPorId(@PathVariable String id) {
+        return ResponseEntity.ok(registroFinancieroService.obtenerPorId(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        service.delete(id);
+    public ResponseEntity<Void> eliminar(
+            @PathVariable String id,
+            Authentication authentication) {
+        registroFinancieroService.eliminar(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

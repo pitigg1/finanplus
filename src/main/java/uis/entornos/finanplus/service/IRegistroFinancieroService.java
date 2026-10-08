@@ -1,13 +1,12 @@
 package uis.entornos.finanplus.service;
 
+import uis.entornos.finanplus.dto.RegistroFinancieroRequestDTO;
+import uis.entornos.finanplus.dto.RegistroFinancieroResponseDTO;
 import java.util.List;
 
-import uis.entornos.finanplus.model.RegistroFinanciero;
-
 public interface IRegistroFinancieroService {
-	List<RegistroFinanciero> findAllByUsuario(String idUsuario);
-    RegistroFinanciero findById(String id);
-    RegistroFinanciero save(RegistroFinanciero registro);
-    RegistroFinanciero update(String id, RegistroFinanciero registro);
-    void delete(String id);
+    RegistroFinancieroResponseDTO crear(RegistroFinancieroRequestDTO request, String correoUsuario);
+    List<RegistroFinancieroResponseDTO> listarPorUsuario(String correoUsuario);
+    RegistroFinancieroResponseDTO obtenerPorId(String id);
+    void eliminar(String id, String correoUsuario);
 }
