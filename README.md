@@ -27,9 +27,8 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 9. [Modelo de datos](#modelo-de-datos)
 10. [Reglas de negocio implementadas](#reglas-de-negocio-implementadas)
 11. [Frontend](#frontend)
-12. [Estado del proyecto y limitaciones conocidas](#estado-del-proyecto-y-limitaciones-conocidas)
+12. [Estado del proyecto](#estado-del-proyecto)
 13. [Documentación adicional](#documentación-adicional)
-14. [Equipo](#equipo)
 
 ## ¿Qué es FinanPlus?
 
