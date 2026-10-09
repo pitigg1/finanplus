@@ -13,7 +13,6 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 
 > **Estado: primera versión.** Incluye el backend (API REST con seguridad JWT y base de datos MySQL) y un frontend sencillo en HTML/JavaScript pensado para **probar los CRUD** del backend. Las funciones avanzadas (IA, alertas automáticas, reportes) están planeadas pero aún no implementadas.
 
-
 ## Tabla de contenido
 
 1. [¿Qué es FinanPlus?](#qué-es-finanplus)
@@ -25,10 +24,9 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 7. [Autenticación y seguridad](#autenticación-y-seguridad)
 8. [Referencia de la API](#referencia-de-la-api)
 9. [Modelo de datos](#modelo-de-datos)
-10. [Reglas de negocio implementadas](#reglas-de-negocio-implementadas)
-11. [Frontend](#frontend)
-12. [Estado del proyecto](#estado-del-proyecto)
-13. [Documentación adicional](#documentación-adicional)
+10. [Frontend](#frontend)
+11. [Estado del proyecto](#estado-del-proyecto)
+12. [Documentación adicional](#documentación-adicional)
 
 ## ¿Qué es FinanPlus?
 
@@ -223,19 +221,6 @@ Base de datos MySQL `finanplus` con 13 tablas; todo gira alrededor del usuario. 
 
 Relaciones principales: un usuario tiene muchos registros, metas, presupuestos, inversiones, métricas, recomendaciones y notificaciones; las categorías clasifican registros, presupuestos y recurrentes. Al borrar un usuario se borran en cascada sus datos; una categoría no se puede borrar si está en uso.
 
-## Reglas de negocio implementadas
-
-- **Presupuesto:** `gastoActual` no se guarda a mano; se calcula en cada consulta sumando los registros de tipo `GASTO` del usuario en esa categoría, mes y año. Así siempre coincide con los registros aunque se editen o eliminen.
-- **Metas y aportes:** crear un aporte suma al `montoActual` de la meta; editarlo ajusta solo la diferencia; borrarlo lo resta (nunca baja de 0). Si `montoActual ≥ montoObjetivo` la meta pasa a `COMPLETADA`, y si deja de cumplirse vuelve a `ACTIVA` (las `CANCELADA` no cambian). Solo se puede aportar a metas `ACTIVA`.
-- **Métricas del mes actual**: hay una sola métrica por mes (si existe, se actualiza).
-  - `flujoNeto = ingresos − gastos`
-  - `tasaAhorro = (ingresos − gastos) / ingresos × 100`
-  - `score = tasaAhorro + 50`, limitado a 0–100
-  - `nivelRiesgo`: `BAJO` si la tasa ≥ 20 %, `MEDIO` si está entre 0 % y 20 %, `ALTO` si es negativa. Con gastos y sin ingresos: score 0 y riesgo `ALTO`.
-- **Registros:** solo el dueño puede editar o eliminar un registro; el monto no puede ser negativo.
-- **Notificaciones:** al marcar `leida`, se guarda `fechaLectura` automáticamente.
-- **Registro de usuario:** nombre y correo obligatorios, formato de correo válido, contraseña de mínimo 6 caracteres.
-
 ## Frontend
 
 Frontend sencillo (Bootstrap + JavaScript) cuyo propósito es probar los CRUD del backend. Todas las páginas (salvo `login.html`) exigen sesión iniciada.
@@ -274,5 +259,3 @@ Código compartido en `frontend/js/comun.js`: URL de la API, manejo del token, f
 
 - [`docs/Entrega1_proyectoEntornos.docx`](docs/Entrega1_proyectoEntornos.docx): informe inicial con el mundo del problema, justificación, requisitos funcionales y no funcionales, y 17 historias de usuario en 9 épicas (acceso, ingresos/gastos, clasificación, metas, inversiones, visualización, IA, alertas y perfil). *En ese informe el proyecto aparece con el nombre provisional "FinSmart"; el nombre final es **FinanPlus**.*
 - [`database/diagrama_er.png`](database/diagrama_er.png): diagrama entidad-relación.
-
-
