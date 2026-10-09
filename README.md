@@ -159,7 +159,7 @@ Edita `src/main/resources/application.properties` y pon **tu** usuario y contras
 mvnw.cmd spring-boot:run
 ```
 
-El backend queda en **http://localhost:8094**. Documentación interactiva de la API: **http://localhost:8094/swagger-ui.html**
+El backend queda en **http://localhost:8094**. 
 
 Para generar un `.jar`:
 
