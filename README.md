@@ -36,11 +36,11 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 Mucha gente no sabe en qué se le va el sueldo, no ahorra porque nunca calcula cuánto podría apartar y no invierte por falta de conocimiento financiero. Pasa tanto con estudiantes como con personas que ya trabajan, y casi nunca es por falta de interés, sino porque no tienen una herramienta sencilla que les muestre con claridad en qué gastan y qué podrían cambiar.
 
 ### La solución
-FinanPlus permite a cualquier persona, sin conocimientos financieros, **registrar sus ingresos y gastos, clasificarlos, fijarse presupuestos mensuales, crear metas de ahorro, llevar sus inversiones** y ver indicadores de su salud financiera. A futuro incorporará sugerencias con IA y alertas automáticas.
+FinanPlus permite a cualquier persona, sin conocimientos financieros, registrar sus ingresos y gastos, clasificarlos, fijarse presupuestos mensuales, crear metas de ahorro, llevar sus inversiones y ver indicadores de su salud financiera. A futuro incorporará sugerencias con IA y alertas automáticas.
 
 ## Funcionalidades
 
-Lo que **ya funciona** en esta versión:
+Lo que ya funciona en esta versión:
 
 | Módulo | Qué permite |
 |---|---|
@@ -60,17 +60,17 @@ Lo que **ya funciona** en esta versión:
 ## Tecnologías
 
 **Backend**
-- Java **17**
-- Spring Boot **4.1.1** (Web, Data JPA, Security, Validation)
-- MySQL **8** (driver `mysql-connector-j`)
-- JWT con **jjwt 0.11.5** (firmado HS256, expiración de 24 h)
-- Contraseñas con **BCrypt**
-- **Lombok**
-- **SpringDoc OpenAPI / Swagger UI** (3.1.1)
+- Java 17
+- Spring Boot 4.1.1 
+- MySQL 8 
+- JWT con jjwt 0.11.5 
+- Contraseñas con BCrypt
+- Lombok
+- SpringDoc OpenAPI / Swagger UI (3.1.1)
 - Maven (se incluye Maven Wrapper: `mvnw` / `mvnw.cmd`)
 
 **Frontend**
-- HTML + JavaScript (vanilla, `fetch`) + **Bootstrap**
+- HTML + JavaScript (vanilla, `fetch`) + Bootstrap
 - El token JWT se guarda en `localStorage`
 
 ## Arquitectura y estructura del proyecto
@@ -131,7 +131,7 @@ cd finanplus
 
 ### 2. Crear la base de datos
 
-Opción A (recomendada): ejecutar el script, que crea la base `finanplus` y las 13 tablas.
+Opción A: ejecutar el script, que crea la base `finanplus` y las 13 tablas.
 
 ```bash
 mysql -u root -p < database/finanplus.sql
@@ -147,7 +147,7 @@ CREATE DATABASE IF NOT EXISTS finanplus CHARACTER SET utf8mb4 COLLATE utf8mb4_un
 
 ### 3. Configurar las credenciales de MySQL
 
-Edita `src/main/resources/application.properties` y pon **tu** usuario y contraseña de MySQL (ver [Configuración](#configuración)).
+Edita `src/main/resources/application.properties` y pon tu usuario y contraseña de MySQL.
 
 ### 4. Arrancar el backend
 
@@ -172,7 +172,7 @@ Para correr las pruebas: `./mvnw test`
 
 ### 5. Abrir el frontend
 
-El backend **no** sirve la carpeta `frontend/`; hay que servirla aparte:
+El backend no sirve la carpeta `frontend/`; hay que servirla aparte:
 
 1. Abre la carpeta del proyecto en VS Code.
 2. Clic derecho sobre `frontend/login.html` → **Open with Live Server**.
@@ -194,17 +194,17 @@ El backend **no** sirve la carpeta `frontend/`; hay que servirla aparte:
 
 ## Autenticación y seguridad
 
-- **Registro / login** (`/api/auth/**`) son públicos y devuelven `{ "token": "...", "usuario": { ... } }`.
+- Registro / login (`/api/auth/**`) son públicos y devuelven `{ "token": "...", "usuario": { ... } }`.
 - El resto de la API requiere el encabezado `Authorization: Bearer <token>`.
-- El token es un **JWT** (HS256) con el correo como *subject* y vigencia de **24 horas**. La sesión es *stateless* (no hay sesión en el servidor).
-- Las contraseñas se guardan con **BCrypt** (campo `password_hash`).
+- El token es un JWT (HS256) con el correo como *subject* y vigencia de 24 horas. La sesión es *stateless* (no hay sesión en el servidor).
+- Las contraseñas se guardan con BCrypt (campo `password_hash`).
 - Solo pueden iniciar sesión usuarios con estado `ACTIVO`; `INACTIVO` y `SUSPENDIDO` reciben un error.
-- En registros, presupuestos y metas, las operaciones de crear/listar/editar/eliminar se hacen sobre el **usuario del token**, no sobre un id enviado por el cliente.
+- En registros, presupuestos y metas, las operaciones de crear/listar/editar/eliminar se hacen sobre el usuario del token, no sobre un id enviado por el cliente.
 - Si el frontend recibe `401`/`403`, cierra la sesión y redirige a `login.html`.
 
 ## Modelo de datos
 
-Base de datos MySQL `finanplus` con **13 tablas**; todo gira alrededor del usuario. El diagrama está en [`database/diagrama_er.png`](database/diagrama_er.png) y el script en [`database/finanplus.sql`](database/finanplus.sql).
+Base de datos MySQL `finanplus` con 13 tablas; todo gira alrededor del usuario. El diagrama está en [`database/diagrama_er.png`](database/diagrama_er.png) y el script en [`database/finanplus.sql`](database/finanplus.sql).
 
 | Tabla | Descripción |
 |---|---|
@@ -221,7 +221,7 @@ Base de datos MySQL `finanplus` con **13 tablas**; todo gira alrededor del usuar
 | `Notificaciones` | Alertas al usuario con prioridad y estado de lectura |
 | `Recomendaciones_IA` | Recomendaciones con modelo usado, nivel de confianza y si fue aplicada |
 
-Relaciones principales: un usuario tiene muchos registros, metas, presupuestos, inversiones, métricas, recomendaciones y notificaciones; las categorías clasifican registros, presupuestos y recurrentes. Al borrar un usuario se borran en cascada sus datos; una categoría **no** se puede borrar si está en uso.
+Relaciones principales: un usuario tiene muchos registros, metas, presupuestos, inversiones, métricas, recomendaciones y notificaciones; las categorías clasifican registros, presupuestos y recurrentes. Al borrar un usuario se borran en cascada sus datos; una categoría no se puede borrar si está en uso.
 
 ## Reglas de negocio implementadas
 
@@ -238,7 +238,7 @@ Relaciones principales: un usuario tiene muchos registros, metas, presupuestos, 
 
 ## Frontend
 
-Frontend sencillo (Bootstrap + JavaScript) cuyo propósito es **probar los CRUD** del backend. Todas las páginas (salvo `login.html`) exigen sesión iniciada.
+Frontend sencillo (Bootstrap + JavaScript) cuyo propósito es probar los CRUD del backend. Todas las páginas (salvo `login.html`) exigen sesión iniciada.
 
 | Página | Módulo |
 |---|---|
@@ -268,7 +268,7 @@ Código compartido en `frontend/js/comun.js`: URL de la API, manejo del token, f
 - **Reportes y comparación de periodos:** gráficas por mes y comparación entre periodos.
 - **Pronóstico de inversiones:** proyectar ganancias según plazo, tasa y riesgo.
 - **Recurrentes automáticos:** que los pagos fijos se registren solos en su fecha.
-- **Cuentas y seguridad:** recuperación de contraseña, roles de administrador y garantizar que cada usuario vea **solo** sus datos.
+- **Cuentas y seguridad:** recuperación de contraseña, roles de administrador y garantizar que cada usuario vea solo sus datos.
 
 ## Documentación adicional
 
