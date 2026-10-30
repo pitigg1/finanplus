@@ -22,27 +22,34 @@ import uis.entornos.finanplus.repository.MetricaFinancieraRepository;
 public class MetricaFinancieraService implements IMetricaFinancieraService {
 	
 	private final MetricaFinancieraRepository metricaRepository;
+	private final uis.entornos.finanplus.security.SeguridadService seguridad;
 	private final UsuarioRepository usuarioRepository;
 	private final RegistroFinancieroRepository registroRepository;
 	
 	@Override
 	public List<MetricaFinanciera> findAllByUsuario(String idUsuario) {
+		seguridad.exigirPropio(idUsuario);
 	return metricaRepository.findByUsuarioIdUsuario(idUsuario);
 	}
 
 	@Override
 	public MetricaFinanciera findById(String id) {
-		return metricaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Métrica no encontrada: " + id));
+		MetricaFinanciera metrica = metricaRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Métrica no encontrada: " + id));
+		seguridad.exigirDueno(metrica.getUsuario());
+		return metrica;
 	}
 
 	@Override
 	public MetricaFinanciera save(MetricaFinanciera metrica) {
+		metrica.setIdMetrica(null);
+		metrica.setUsuario(seguridad.referenciaActual());
 		return metricaRepository.save(metrica);
 	}
 	// Calcula la métrica del MES ACTUAL. Hay una sola métrica por mes: si ya existe, se actualiza.
 	@Override
 	public MetricaFinanciera calcular(String idUsuario) {
+		seguridad.exigirPropio(idUsuario);
 		Usuario usuario = usuarioRepository.findById(idUsuario)
 				.orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuario));
 		LocalDateTime ahora = LocalDateTime.now();

@@ -28,6 +28,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
     private final EtiquetaRepository etiquetaRepository; // Inyección añadida
+    private final uis.entornos.finanplus.security.SeguridadService seguridad;
 
     @Override
     @Transactional
@@ -37,6 +38,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
 
         Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
+        seguridad.exigirCategoriaVisible(categoria);
 
         TipoMovimiento tipoMovimiento;
         try {
@@ -49,6 +51,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
         Set<Etiqueta> etiquetas = new HashSet<>();
         if (request.getIdsEtiquetas() != null && !request.getIdsEtiquetas().isEmpty()) {
             etiquetas = new HashSet<>(etiquetaRepository.findAllById(request.getIdsEtiquetas()));
+            etiquetas.forEach(seguridad::exigirEtiquetaVisible);
         }
 
         RegistroFinanciero registro = RegistroFinanciero.builder()
@@ -79,6 +82,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
     public RegistroFinancieroResponseDTO obtenerPorId(String id) {
         RegistroFinanciero registro = registroRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Registro financiero no encontrado con ID: " + id));
+        seguridad.exigirDueno(registro.getUsuario());
         return mapearAResponseDTO(registro);
     }
 
@@ -105,6 +109,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
 
         Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
+        seguridad.exigirCategoriaVisible(categoria);
 
         TipoMovimiento tipoMovimiento;
         try {
@@ -124,6 +129,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
         // Actualizar colección de etiquetas
         if (request.getIdsEtiquetas() != null) {
             Set<Etiqueta> nuevasEtiquetas = new HashSet<>(etiquetaRepository.findAllById(request.getIdsEtiquetas()));
+            nuevasEtiquetas.forEach(seguridad::exigirEtiquetaVisible);
             registroExistente.setEtiquetas(nuevasEtiquetas);
         }
 

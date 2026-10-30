@@ -234,3 +234,16 @@ h2, .h2, h3, .h3, h5, .h5 { letter-spacing: -.025em; }
 
 /* con solo 7 tipos se muestran todos, sin barra de desplazamiento propia */
 .tipo-picker { max-height: none; overflow: visible; }
+
+/* ---- Perfil: foto y avatar del menú ---- */
+.sb-avatar { background-size: cover; background-position: center; }
+.sb-usuario-enlace {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 4px 6px; border-radius: 12px; color: inherit;
+  transition: background-color .15s var(--ease);
+}
+.sb-usuario-enlace:hover { background: rgba(120, 120, 128, .12); color: inherit; }
+.perfil-avatar {
+  width: 128px; height: 128px; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
+  background: linear-gradient(135deg, #0A84FF, #5856D6) center / cover no-repeat;
+  color: #fff; font-size: 52px; font-weight: 700; letter-spacing: -.03em; box-shadow: 0 8px 24px rgba(10, 132, 255, .28);
+}

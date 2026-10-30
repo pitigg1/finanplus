@@ -17,7 +17,9 @@ CREATE TABLE Usuarios (
     moneda_preferida VARCHAR(10) DEFAULT 'COP',
     pais VARCHAR(80),
     foto_perfil VARCHAR(255),
-    estado ENUM('ACTIVO', 'INACTIVO', 'SUSPENDIDO') DEFAULT 'ACTIVO'
+    estado ENUM('ACTIVO', 'INACTIVO', 'SUSPENDIDO') DEFAULT 'ACTIVO',
+    rol ENUM('USUARIO', 'ADMIN') NOT NULL DEFAULT 'USUARIO',
+    sesion_version INT NOT NULL DEFAULT 0
 );
 
 -- =========================================================
@@ -29,7 +31,15 @@ CREATE TABLE Categorias (
     nombre VARCHAR(100) NOT NULL,
     tipo ENUM('INGRESO', 'GASTO', 'AHORRO', 'INVERSION') NOT NULL,
     icono VARCHAR(100),
-    color VARCHAR(20)
+    color VARCHAR(20),
+
+    -- dueño de la categoría; NULL = general (la ven todos y solo un administrador la cambia)
+    id_usuario CHAR(36) NULL,
+
+    CONSTRAINT fk_categoria_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES Usuarios(id_usuario)
+        ON DELETE CASCADE
 );
 
 -- =========================================================
@@ -386,7 +396,18 @@ CREATE TABLE Movimientos_Recurrentes (
 
 CREATE TABLE Etiquetas (
     id_etiqueta INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE
+    nombre VARCHAR(100) NOT NULL,
+
+    -- dueño de la etiqueta; NULL = general. El nombre es único POR usuario.
+    id_usuario CHAR(36) NULL,
+
+    CONSTRAINT fk_etiqueta_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES Usuarios(id_usuario)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uk_etiqueta_usuario_nombre
+        UNIQUE (nombre, id_usuario)
 );
 
 -- =========================================================
@@ -407,6 +428,26 @@ CREATE TABLE Registro_Etiqueta (
     CONSTRAINT fk_registro_etiqueta_etiqueta
         FOREIGN KEY (id_etiqueta)
         REFERENCES Etiquetas(id_etiqueta)
+        ON DELETE CASCADE
+);
+
+-- =========================================================
+-- TABLA: Tokens_Recuperacion
+-- Enlaces de un solo uso para restablecer la contraseña.
+-- Se guarda solo el HASH (SHA-256) del enlace, nunca el enlace.
+-- =========================================================
+
+CREATE TABLE Tokens_Recuperacion (
+    id_token CHAR(36) PRIMARY KEY,
+    id_usuario CHAR(36) NOT NULL,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    expira DATETIME NOT NULL,
+    usado BOOLEAN NOT NULL DEFAULT FALSE,
+    creado DATETIME,
+
+    CONSTRAINT fk_token_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES Usuarios(id_usuario)
         ON DELETE CASCADE
 );
 

@@ -1,5 +1,7 @@
 package uis.entornos.finanplus.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,4 +27,12 @@ public class Categoria {
 
     private String icono;
     private String color;
+
+    // Dueño de la categoría. Si es null (datos antiguos) es "general": la ven todos y solo un administrador la cambia.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Usuario usuario;
 }

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class MetaAhorroService implements IMetaAhorroService {
 
     private final MetaAhorroRepository metaRepository;
+    private final uis.entornos.finanplus.security.SeguridadService seguridad;
     private final UsuarioRepository usuarioRepository;
 
     @Override
@@ -62,6 +63,7 @@ public class MetaAhorroService implements IMetaAhorroService {
     public MetaAhorroResponseDTO obtenerPorId(String id) {
         MetaAhorro meta = metaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada con ID: " + id));
+        seguridad.exigirDueno(meta.getUsuario());
         return mapearAResponseDTO(meta);
     }
 

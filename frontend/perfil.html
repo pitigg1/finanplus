@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mi perfil - FinanPlus</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" rel="stylesheet">
+  <link href="css/apple.css?v=20261030d" rel="stylesheet">
+  <script src="js/tema.js?v=20261030d"></script>
+  <link href="css/vistas.css?v=20261030d" rel="stylesheet">
+  <link href="css/ios.css?v=20261030d" rel="stylesheet">
+</head>
+<body>
+  <div id="menu"></div>
+
+  <main class="container">
+    <div class="page-head">
+      <div><h1>Mi perfil</h1><p class="page-sub">Tus datos y preferencias.</p></div>
+    </div>
+    <div id="alerta"></div>
+
+    <div class="row g-3">
+      <!-- Foto y cuenta -->
+      <div class="col-12 col-lg-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <div class="perfil-avatar mx-auto mb-3" id="avatar" aria-label="Tu foto de perfil"><span id="avatarInicial">?</span></div>
+            <h2 class="h5 mb-1" id="tituloNombre">&nbsp;</h2>
+            <p class="text-muted small mb-1" id="textoCorreo">&nbsp;</p>
+            <div class="mb-3" id="chipRol"></div>
+
+            <input type="file" id="archivoFoto" accept="image/png,image/jpeg" class="d-none">
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-primary" id="btnCambiarFoto"><i class="bi bi-camera"></i> Cambiar foto</button>
+              <button type="button" class="btn btn-outline-danger d-none" id="btnQuitarFoto"><i class="bi bi-trash3"></i> Quitar foto</button>
+            </div>
+            <p class="small text-muted mt-3 mb-0">JPG o PNG, hasta 2 MB. Se ajusta sola a un tamaño pequeño.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <!-- Datos personales -->
+        <div class="card mb-3">
+          <div class="card-header">Datos personales</div>
+          <div class="card-body">
+            <form id="formPerfil" class="row g-3">
+              <div class="col-12 col-md-6">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input id="nombre" class="form-control" maxlength="100" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="correo" class="form-label">Correo <small>(no se puede cambiar)</small></label>
+                <input id="correo" type="email" class="form-control" disabled>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="pais" class="form-label">País</label>
+                <input id="pais" class="form-control" maxlength="80" placeholder="Opcional">
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="moneda" class="form-label">Moneda</label>
+                <select id="moneda" class="form-select"></select>
+              </div>
+              <div class="col-12">
+                <p class="small text-muted mb-0">La moneda solo cambia cómo se muestran los montos en toda la app; no convierte valores.</p>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary" id="btnGuardarPerfil">Guardar cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="card mb-3">
+          <div class="card-header">Contraseña</div>
+          <div class="card-body">
+            <form id="formPassword" class="row g-3">
+              <div class="col-12">
+                <label for="passActual" class="form-label">Contraseña actual</label>
+                <input id="passActual" type="password" class="form-control" autocomplete="current-password" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="passNueva" class="form-label">Nueva contraseña</label>
+                <input id="passNueva" type="password" class="form-control" minlength="6" autocomplete="new-password" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="passRepetir" class="form-label">Repite la nueva</label>
+                <input id="passRepetir" type="password" class="form-control" minlength="6" autocomplete="new-password" required>
+              </div>
+              <div class="col-12">
+                <p class="small text-muted mb-2">Mínimo 6 caracteres. Al cambiarla, se cierran tus sesiones en otros dispositivos.</p>
+                <button type="submit" class="btn btn-primary" id="btnCambiarPassword">Cambiar contraseña</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Eliminar cuenta -->
+        <div class="card">
+          <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+              <h2 class="h6 mb-1">Eliminar mi cuenta</h2>
+              <p class="small text-muted mb-0">Se borran tu cuenta y todos tus datos. No se puede deshacer.</p>
+            </div>
+            <button type="button" class="btn btn-outline-danger" id="btnEliminarCuenta">Eliminar cuenta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/comun.js?v=20261030d"></script>
+  <script src="js/perfil.js?v=20261030d"></script>
+</body>
+</html>

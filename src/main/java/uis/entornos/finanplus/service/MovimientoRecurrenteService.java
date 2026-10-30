@@ -18,31 +18,34 @@ import uis.entornos.finanplus.repository.UsuarioRepository;
 public class MovimientoRecurrenteService implements IMovimientoRecurrenteService {
 
     private final MovimientoRecurrenteRepository repository;
-    private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
+    private final uis.entornos.finanplus.security.SeguridadService seguridad;
 
     @Override
     @Transactional(readOnly = true)
     public List<MovimientoRecurrente> findAllByUsuario(String idUsuario) {
+        seguridad.exigirPropio(idUsuario);
         return repository.findByUsuarioIdUsuario(idUsuario);
     }
 
     @Override
     @Transactional(readOnly = true)
     public MovimientoRecurrente findById(String id) {
-        return repository.findById(id)
+        MovimientoRecurrente m = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Movimiento recurrente no encontrado"));
+        seguridad.exigirDueno(m.getUsuario());
+        return m;
     }
 
     @Override
     @Transactional
     public MovimientoRecurrente save(MovimientoRecurrente m) {
-        Usuario usuario = usuarioRepository.findById(m.getUsuario().getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Categoria categoria = categoriaRepository.findById(m.getCategoria().getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        seguridad.exigirCategoriaVisible(categoria);
 
-        m.setUsuario(usuario);
+        m.setIdRecurrencia(null);                       // nunca se pisa un recurrente que ya existe
+        m.setUsuario(seguridad.referenciaActual());     // el dueño es quien lo crea, no lo que mande el cliente
         m.setCategoria(categoria);
         return repository.save(m);
     }
@@ -54,6 +57,7 @@ public class MovimientoRecurrenteService implements IMovimientoRecurrenteService
 
         Categoria categoria = categoriaRepository.findById(m.getCategoria().getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        seguridad.exigirCategoriaVisible(categoria);
 
         existente.setNombre(m.getNombre());
         existente.setCategoria(categoria);
@@ -68,6 +72,6 @@ public class MovimientoRecurrenteService implements IMovimientoRecurrenteService
     @Override
     @Transactional
     public void delete(String id) {
-        repository.delete(findById(id));   
+        repository.delete(findById(id));
     }
 }

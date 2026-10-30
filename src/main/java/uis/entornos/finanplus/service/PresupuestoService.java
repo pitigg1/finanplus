@@ -25,6 +25,7 @@ public class PresupuestoService implements IPresupuestoService {
     private final PresupuestoRepository presupuestoRepository;
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
+    private final uis.entornos.finanplus.security.SeguridadService seguridad;
     private final RegistroFinancieroRepository registroRepository;
 
     @Override
@@ -34,6 +35,7 @@ public class PresupuestoService implements IPresupuestoService {
 
         Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
+        seguridad.exigirCategoriaVisible(categoria);
 
         Presupuesto presupuesto = Presupuesto.builder()
                 .usuario(usuario)
@@ -59,6 +61,7 @@ public class PresupuestoService implements IPresupuestoService {
     public PresupuestoResponseDTO obtenerPorId(String id) {
         Presupuesto presupuesto = presupuestoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado con ID: " + id));
+        seguridad.exigirDueno(presupuesto.getUsuario());
         return mapearAResponseDTO(presupuesto);
     }
     
@@ -71,6 +74,7 @@ public class PresupuestoService implements IPresupuestoService {
         }
         Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
+        seguridad.exigirCategoriaVisible(categoria);
 
         presupuesto.setCategoria(categoria);
         presupuesto.setMes(request.getMes());

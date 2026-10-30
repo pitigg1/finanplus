@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class CategoriaService implements ICategoriaService {
 
     private final CategoriaRepository categoriaRepository;
+    private final uis.entornos.finanplus.security.SeguridadService seguridad;
     
     @Override
     public CategoriaResponseDTO crear(CategoriaRequestDTO dto) {
@@ -25,6 +26,7 @@ public class CategoriaService implements ICategoriaService {
                 .tipo(TipoMovimiento.valueOf(dto.getTipo().toUpperCase())) // Convierte "INGRESO"/"GASTO" al Enum
                 .icono(dto.getIcono())
                 .color(dto.getColor())
+                .usuario(seguridad.referenciaActual())
                 .build();
 
         Categoria guardada = categoriaRepository.save(categoria);
@@ -33,7 +35,7 @@ public class CategoriaService implements ICategoriaService {
 
     @Override
     public List<CategoriaResponseDTO> listarTodas() {
-        return categoriaRepository.findAll().stream()
+        return categoriaRepository.findByUsuarioIsNullOrUsuarioIdUsuario(seguridad.idActual()).stream()
                 .map(this::mapearAResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -42,6 +44,7 @@ public class CategoriaService implements ICategoriaService {
     public CategoriaResponseDTO obtenerPorId(Integer id) {
         Categoria categoria = categoriaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        if (!seguridad.esAdmin()) seguridad.exigirCategoriaVisible(categoria);
         return mapearAResponseDTO(categoria);
     }
 
@@ -60,6 +63,7 @@ public class CategoriaService implements ICategoriaService {
         Categoria categoriaExistente = categoriaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
 
+        seguridad.exigirPuedeEditar(categoriaExistente.getUsuario(), "categoría");
         categoriaExistente.setNombre(dto.getNombre());
         categoriaExistente.setTipo(TipoMovimiento.valueOf(dto.getTipo().toUpperCase()));
         categoriaExistente.setIcono(dto.getIcono());
@@ -71,9 +75,9 @@ public class CategoriaService implements ICategoriaService {
     
     @Override
     public void eliminar(Integer id) {
-        if (!categoriaRepository.existsById(id)) {
-            throw new RuntimeException("Categoría no encontrada con ID: " + id);
-        }
-        categoriaRepository.deleteById(id);
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
+        seguridad.exigirPuedeEditar(categoria.getUsuario(), "categoría");
+        categoriaRepository.delete(categoria);
     }
 }

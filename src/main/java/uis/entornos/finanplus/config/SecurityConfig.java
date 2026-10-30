@@ -26,6 +26,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -59,11 +60,22 @@ public class SecurityConfig {
                 // 3. Todo el resto de la API requiere autenticación JWT
                 .anyRequest().authenticated()
             )
+            // Sin sesión o token vencido -> 401 (el frontend lleva al login).
+            // Con sesión pero sin permiso -> 403 (el frontend muestra el mensaje y NO cierra la sesión).
+            .exceptionHandling(e -> e
+                .authenticationEntryPoint((req, res, ex) -> escribirError(res, 401, "Debes iniciar sesión"))
+                .accessDeniedHandler((req, res, ex) -> escribirError(res, 403, "No tienes permiso para hacer esto")))
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    private static void escribirError(jakarta.servlet.http.HttpServletResponse res, int estado, String mensaje) throws java.io.IOException {
+        res.setStatus(estado);
+        res.setContentType("application/json;charset=UTF-8");
+        res.getWriter().write("{\"status\":" + estado + ",\"message\":\"" + mensaje + "\"}");
     }
 
     @Bean

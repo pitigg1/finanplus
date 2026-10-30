@@ -22,15 +22,21 @@ public class AporteMetaService implements IAporteMetaService {
     private final AporteMetaRepository repository;
     private final MetaAhorroRepository metaRepository;
     private final RegistroFinancieroRepository registroRepository;
+    private final uis.entornos.finanplus.security.SeguridadService seguridad;
 
     @Override
     public List<AporteMeta> findAllByMeta(String idMeta) {
+        MetaAhorro meta = metaRepository.findById(idMeta)
+                .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada"));
+        seguridad.exigirDueno(meta.getUsuario());
         return repository.findByMetaIdMeta(idMeta);
     }
 
     @Override
     public AporteMeta findById(String id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Aporte no encontrado"));
+        AporteMeta aporte = repository.findById(id).orElseThrow(() -> new RuntimeException("Aporte no encontrado"));
+        seguridad.exigirDueno(aporte.getMeta().getUsuario());
+        return aporte;
     }
 
     @Override
@@ -41,6 +47,14 @@ public class AporteMetaService implements IAporteMetaService {
                 .orElseThrow(() -> new RuntimeException("Meta de ahorro no encontrada"));
         RegistroFinanciero registro = registroRepository.findById(aporte.getRegistro().getIdRegistro())
                 .orElseThrow(() -> new RuntimeException("Registro financiero no encontrado"));
+
+        // la meta y el registro tienen que ser del usuario de la sesión (el cliente solo manda los ids)
+
+        seguridad.exigirDueno(meta.getUsuario());
+
+        seguridad.exigirDueno(registro.getUsuario());
+
+        aporte.setIdAporte(null);
 
         if (meta.getEstado() != EstadoMeta.ACTIVA) {
             throw new RuntimeException("Solo se puede aportar a metas activas");

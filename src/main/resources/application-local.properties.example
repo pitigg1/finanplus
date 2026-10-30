@@ -1,0 +1,28 @@
+# ============================================================
+# Configuración PERSONAL (claves y contraseñas). NO se sube a GitHub.
+#
+# 1) Copia este archivo con el nombre:  application-local.properties   (en esta misma carpeta)
+# 2) Completa tus datos.
+# 3) Arranca el backend con el perfil "local":
+#       ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+#    (en Spring Tools / VS Code: Active profiles = local)
+# ============================================================
+
+# --- Correo para recuperar contraseña (ejemplo con Gmail) ---
+# Si no pones esto, no se envían correos: el enlace sale en la consola del backend.
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=tucorreo@gmail.com
+# NO es tu contraseña normal. Es una "contraseña de aplicación" de 16 letras, escrita sin espacios:
+#   Cuenta de Google > Seguridad > Verificación en 2 pasos (debe estar activa) > Contraseñas de aplicaciones
+spring.mail.password=contraseñaDeAplicacionDe16Letras
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# --- Otras cosas personales (descomenta lo que uses) ---
+# Contraseña de TU MySQL (así no queda escrita en application.properties, que es público):
+# spring.datasource.password=tuContraseñaDeMySQL
+# Clave que firma las sesiones (texto Base64 de al menos 32 bytes). Si no la pones, se genera una al azar en cada arranque:
+# jwt.secret=
+# Correo del primer administrador:
+# finanplus.admin.correo=tucorreo@gmail.com

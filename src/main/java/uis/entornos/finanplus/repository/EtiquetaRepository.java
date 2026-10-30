@@ -7,5 +7,9 @@ import uis.entornos.finanplus.model.Etiqueta;
 
 @Repository
 public interface EtiquetaRepository extends JpaRepository<Etiqueta, Integer> {
-    boolean existsByNombre(String nombre);
+    java.util.List<Etiqueta> findByUsuarioIsNullOrUsuarioIdUsuario(String idUsuario);
+
+    java.util.List<Etiqueta> findByUsuarioIdUsuario(String idUsuario);
+
+    boolean existsByNombreAndUsuarioIdUsuario(String nombre, String idUsuario);
 }

@@ -11,4 +11,6 @@ import uis.entornos.finanplus.model.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, String>{
 	boolean existsByCorreo(String correo);
 	Optional<Usuario> findByCorreo(String correo);
+
+	long countByRol(uis.entornos.finanplus.enums.Rol rol);
 }

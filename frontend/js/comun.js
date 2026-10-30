@@ -34,6 +34,15 @@ function exigirUsuario() {
   return id;
 }
 
+// ¿El usuario de esta sesión es administrador? (el servidor es quien manda; esto solo decide qué se muestra)
+function esAdmin() {
+  try {
+    return (JSON.parse(localStorage.getItem("usuario")) || {}).rol === "ADMIN";
+  } catch (e) {
+    return false;
+  }
+}
+
 // Cierra la sesión y borra los datos del navegador
 function cerrarSesion() {
   localStorage.removeItem("jwtToken");
@@ -62,8 +71,9 @@ async function api(ruta, metodo = "GET", datos = null) {
     throw new Error("No se pudo conectar con el servidor. ¿Está encendido el backend?");
   }
 
-  // Si el token expiró o es inválido, redirige a login.html
-  if (respuesta.status === 401 || respuesta.status === 403) {
+  // Si el token expiró o es inválido (401), redirige a login.html.
+  // Un 403 significa "tienes sesión pero no permiso": se muestra el mensaje del servidor y la sesión sigue abierta.
+  if (respuesta.status === 401) {
     localStorage.removeItem("jwtToken");
     localStorage.removeItem("usuarioId");
     location.href = "login.html";
@@ -115,9 +125,25 @@ function esc(texto) {
   return String(texto ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// Formato moneda COP
+// Moneda elegida en el perfil (por defecto COP). Solo cambia cómo se ven los montos; no convierte valores.
+function monedaActual() {
+  try {
+    const m = (JSON.parse(localStorage.getItem("usuario")) || {}).monedaPreferida;
+    return m && /^[A-Z]{3}$/.test(m) ? m : "COP";
+  } catch (e) {
+    return "COP";
+  }
+}
+
+// Formato de dinero en la moneda del perfil
 function dinero(valor) {
-  return Number(valor ?? 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
+  const moneda = monedaActual();
+  const decimales = moneda === "COP" || moneda === "CLP" ? 0 : 2; // el peso colombiano y el chileno no usan centavos
+  try {
+    return Number(valor ?? 0).toLocaleString("es-CO", { style: "currency", currency: moneda, minimumFractionDigits: 0, maximumFractionDigits: decimales });
+  } catch (e) {
+    return "$ " + Number(valor ?? 0).toLocaleString("es-CO");
+  }
 }
 
 // ----- Campos de monto con puntos de miles (1500000 -> 1.500.000) -----
@@ -250,7 +276,8 @@ function menu(paginaActual) {
                 ${enlace("notificaciones.html", "Notificaciones", "bi-bell")}
               </ul>
             </li>
-            <li class="nav-item"><a class="nav-link ${paginaActual === "usuarios.html" ? "active" : ""}" href="usuarios.html">Usuarios</a></li>
+            <li class="nav-item"><a class="nav-link ${paginaActual === "perfil.html" ? "active" : ""}" href="perfil.html">Mi perfil</a></li>
+            ${esAdmin() ? `<li class="nav-item"><a class="nav-link ${paginaActual === "usuarios.html" ? "active" : ""}" href="usuarios.html">Usuarios</a></li>` : ""}
           </ul>
           <button class="btn-tema d-none d-lg-grid me-3" type="button" onclick="alternarTema()" aria-label="Cambiar entre modo claro y oscuro" title="Modo claro / oscuro">
             <i class="bi bi-moon-stars i-luna"></i><i class="bi bi-sun i-sol"></i>
@@ -277,7 +304,8 @@ function menu(paginaActual) {
         ${item("recomendaciones.html", "Recomendaciones IA", "bi-stars")}
         ${item("notificaciones.html", "Notificaciones", "bi-bell")}
         <div class="sb-seccion">Cuenta</div>
-        ${item("usuarios.html", "Usuarios", "bi-people")}
+        ${item("perfil.html", "Mi perfil", "bi-person-circle")}
+        ${esAdmin() ? item("usuarios.html", "Usuarios", "bi-people") : ""}
       </nav>
       <div class="sb-pie">
         <div class="sb-usuario" id="sbUsuario"></div>
@@ -304,11 +332,17 @@ function menu(paginaActual) {
   if (token && contenedorUsuario) {
     api("/usuarios/perfil")
       .then((u) => {
-        const sb = document.getElementById("sbUsuario");
-        if (sb) {
-          sb.innerHTML = `<span class="sb-avatar">${esc(String(u.nombre).trim().charAt(0).toUpperCase())}</span>
-            <span class="sb-nombre"><strong>${esc(u.nombre)}</strong><small>${esc(u.correo || "")}</small></span>`;
-        }
+        try {
+          // si el rol o la moneda cambiaron en el servidor (por ejemplo desde otro dispositivo), se actualiza y se recarga una sola vez
+          const guardado = JSON.parse(localStorage.getItem("usuario")) || {};
+          const cambio = (u.rol && guardado.rol !== u.rol) || (u.monedaPreferida && guardado.monedaPreferida !== u.monedaPreferida);
+          localStorage.setItem("usuario", JSON.stringify({ ...guardado, nombre: u.nombre, pais: u.pais, monedaPreferida: u.monedaPreferida, rol: u.rol, tieneFoto: u.tieneFoto }));
+          if (cambio) {
+            location.reload();
+            return;
+          }
+        } catch (e) {}
+        pintarUsuarioMenu(u);
         contenedorUsuario.innerHTML = `
           <span class="small">Hola, <strong>${esc(String(u.nombre).split(" ")[0])}</strong></span>
           <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>`;
@@ -747,3 +781,36 @@ window.addEventListener("load", () => {
   prepararHoja();
   etiquetarTablas();
 });
+
+// ----- Foto de perfil -----
+// La foto solo la ve su dueño: se pide con el token y se muestra como una dirección temporal (blob).
+async function cargarFotoPerfil() {
+  const token = tokenActual();
+  if (!token) return null;
+  try {
+    const respuesta = await fetch(API + "/usuarios/perfil/foto", { headers: { Authorization: "Bearer " + token } });
+    if (!respuesta.ok) return null;
+    return URL.createObjectURL(await respuesta.blob());
+  } catch (e) {
+    return null;
+  }
+}
+
+// Bloque de usuario del menú lateral: foto (o inicial), nombre y correo; al tocarlo abre "Mi perfil"
+function pintarUsuarioMenu(u) {
+  const sb = document.getElementById("sbUsuario");
+  if (!sb) return;
+  sb.innerHTML = `<a class="sb-usuario-enlace" href="perfil.html" title="Mi perfil">
+      <span class="sb-avatar">${esc(String(u.nombre).trim().charAt(0).toUpperCase())}</span>
+      <span class="sb-nombre"><strong>${esc(u.nombre)}</strong><small>${esc(u.correo || "")}</small></span>
+    </a>`;
+  if (u.tieneFoto) {
+    cargarFotoPerfil().then((url) => {
+      const avatar = sb.querySelector(".sb-avatar");
+      if (url && avatar) {
+        avatar.style.backgroundImage = `url(${url})`;
+        avatar.textContent = "";
+      }
+    });
+  }
+}

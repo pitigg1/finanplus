@@ -23,16 +23,20 @@ public class AuthService implements IAuthService{
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    // Correo del primer administrador (variable de entorno FINANPLUS_ADMIN_CORREO). Quien se registre con él será ADMIN.
+    @org.springframework.beans.factory.annotation.Value("${finanplus.admin.correo:}")
+    private String correoAdmin;
+
     @Override
     public AuthResponseDTO registrar(RegistroUsuarioDTO request) {
         Usuario usuario = new Usuario();
         usuario.setNombre(request.getNombre());
         usuario.setCorreo(request.getCorreo());
         usuario.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        usuario.setMonedaPreferida(request.getMonedaPreferida() != null ? request.getMonedaPreferida() : "COP");
+        usuario.setMonedaPreferida(PerfilService.normalizarMoneda(request.getMonedaPreferida()));
         usuario.setPais(request.getPais());
-        usuario.setEstado(EstadoUsuario.ACTIVO); 
-
+        usuario.setEstado(EstadoUsuario.ACTIVO);
+        usuario.setRol(esCorreoAdmin(request.getCorreo()) ? uis.entornos.finanplus.enums.Rol.ADMIN : uis.entornos.finanplus.enums.Rol.USUARIO);
         usuarioRepository.save(usuario);
         String token = jwtService.generateToken(usuario);
         return construirAuthResponse(token, usuario);
@@ -50,6 +54,10 @@ public class AuthService implements IAuthService{
         return construirAuthResponse(token, usuario);
     }
 
+    private boolean esCorreoAdmin(String correo) {
+        return correoAdmin != null && !correoAdmin.isBlank() && correoAdmin.trim().equalsIgnoreCase(correo.trim());
+    }
+
     private AuthResponseDTO construirAuthResponse(String token, Usuario usuario) {
         UsuarioResponseDTO usuarioDTO = UsuarioResponseDTO.builder()
                 .idUsuario(usuario.getIdUsuario())
@@ -58,6 +66,8 @@ public class AuthService implements IAuthService{
                 .monedaPreferida(usuario.getMonedaPreferida())
                 .pais(usuario.getPais())
                 .estado(usuario.getEstado())
+                .rol(usuario.getRol())
+                .tieneFoto(usuario.getFotoPerfil() != null && !usuario.getFotoPerfil().isBlank())
                 .fechaRegistro(usuario.getFechaRegistro())
                 .build();
 

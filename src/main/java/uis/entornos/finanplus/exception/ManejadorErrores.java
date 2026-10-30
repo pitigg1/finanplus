@@ -50,6 +50,20 @@ public class ManejadorErrores {
         return respuesta(HttpStatus.CONFLICT, "No se puede completar: hay otros datos que dependen de este");
     }
 
+    // Sin permiso (rol insuficiente o categoría general): 403. El frontend muestra el mensaje y no cierra la sesión.
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> sinPermiso(org.springframework.security.access.AccessDeniedException e) {
+        String mensaje = e.getMessage() == null || e.getMessage().startsWith("Access Denied")
+                ? "No tienes permiso para hacer esto" : e.getMessage();
+        return respuesta(HttpStatus.FORBIDDEN, mensaje);
+    }
+
+    // Subir una imagen más grande de lo permitido (límite de spring.servlet.multipart)
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> archivoGrande(org.springframework.web.multipart.MaxUploadSizeExceededException e) {
+        return respuesta(HttpStatus.PAYLOAD_TOO_LARGE, "La imagen es muy grande (máximo 2 MB)");
+    }
+
     // Errores lanzados en los services con new RuntimeException("...")
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> negocio(RuntimeException e) {

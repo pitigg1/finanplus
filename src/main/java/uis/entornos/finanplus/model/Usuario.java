@@ -2,7 +2,7 @@ package uis.entornos.finanplus.model;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -23,7 +23,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import uis.entornos.finanplus.enums.EstadoUsuario;
+import uis.entornos.finanplus.enums.Rol;
 
 @Entity
 @Table(name = "Usuarios")
@@ -48,6 +51,7 @@ public class Usuario implements UserDetails{
 	private String correo;
 
 	@NotBlank(message = "La contraseña es obligatoria")
+	@JsonIgnore
 	@Column(name = "password_hash")
 	private String passwordHash;
 
@@ -69,16 +73,32 @@ public class Usuario implements UserDetails{
 	@Builder.Default
 	private EstadoUsuario estado = EstadoUsuario.ACTIVO;
 
+	// Cada token de sesión lleva esta versión. Al restablecer la contraseña sube en 1 y los tokens anteriores dejan de servir.
+	@JsonIgnore
+	@Column(name = "sesion_version")
+	@Builder.Default
+	private Integer sesionVersion = 0;
+
+	// USUARIO (por defecto) o ADMIN. Los usuarios antiguos sin rol se tratan como USUARIO.
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private Rol rol = Rol.USUARIO;
+
 	@PrePersist
 	protected void onCreate() {
 		this.fechaRegistro = LocalDateTime.now();
 	}
 	
+	// (no es un "getter": no sale en el JSON) las cuentas antiguas sin versión cuentan como 0
+	public int versionDeSesion() {
+		return sesionVersion == null ? 0 : sesionVersion;
+	}
+
 	// --- Métodos requeridos por UserDetails ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); 
+        return List.of(new SimpleGrantedAuthority("ROLE_" + (rol != null ? rol : Rol.USUARIO).name()));
     }
 
     @Override

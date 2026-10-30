@@ -3,6 +3,7 @@ package uis.entornos.finanplus.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import uis.entornos.finanplus.dto.ActualizarUsuarioDTO;
@@ -24,22 +25,26 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @seguridad.esPropio(#id)")
     public ResponseEntity<UsuarioResponseDTO> obtenerPorId(@PathVariable String id) {
         return ResponseEntity.ok(usuarioService.obtenerPorId(id));
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuarioResponseDTO>> listarTodos() {
         return ResponseEntity.ok(usuarioService.listarTodos());
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @seguridad.esPropio(#id)")
     public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable String id,
                                                          @Valid @RequestBody ActualizarUsuarioDTO datos) {
         return ResponseEntity.ok(usuarioService.actualizar(id, datos));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @seguridad.esPropio(#id)")
     public ResponseEntity<Void> eliminar(@PathVariable String id) {
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();

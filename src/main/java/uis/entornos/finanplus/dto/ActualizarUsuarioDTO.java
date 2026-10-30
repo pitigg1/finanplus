@@ -23,6 +23,10 @@ public class ActualizarUsuarioDTO {
     @Pattern(regexp = "ACTIVO|INACTIVO|SUSPENDIDO", message = "El estado debe ser ACTIVO, INACTIVO o SUSPENDIDO")
     private String estado;
 
+    // USUARIO o ADMIN. Solo lo puede cambiar un administrador; si lo manda otra persona, se ignora.
+    @Pattern(regexp = "USUARIO|ADMIN", message = "El rol debe ser USUARIO o ADMIN")
+    private String rol;
+
     // Opcional: si viene vacío, se conserva la contraseña actual
     @Size(max = 100, message = "La contraseña es demasiado larga")
     private String password;
