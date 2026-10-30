@@ -55,6 +55,7 @@ public class MovimientoRecurrenteService implements IMovimientoRecurrenteService
         Categoria categoria = categoriaRepository.findById(m.getCategoria().getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+        existente.setNombre(m.getNombre());
         existente.setCategoria(categoria);
         existente.setTipoMovimiento(m.getTipoMovimiento());
         existente.setMontoEstimado(m.getMontoEstimado());

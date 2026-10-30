@@ -37,19 +37,46 @@ function etiquetasMarcadas() {
 }
 
 // LISTAR
+let filtroTipo = "";
+let textoBusqueda = "";
+
+function pasaFiltro(r) {
+  if (filtroTipo && r.tipoMovimiento !== filtroTipo) return false;
+  if (!textoBusqueda) return true;
+  const texto = `${r.descripcion || ""} ${r.nombreCategoria || ""} ${(r.etiquetas || []).join(" ")}`.toLowerCase();
+  return texto.includes(textoBusqueda);
+}
+
+document.getElementById("filtroTipo").addEventListener("click", (e) => {
+  const boton = e.target.closest("button");
+  if (!boton) return;
+  filtroTipo = boton.dataset.tipo;
+  document.querySelectorAll("#filtroTipo button").forEach((b) => b.classList.toggle("activo", b === boton));
+  pintar();
+});
+document.getElementById("buscar").addEventListener("input", (e) => {
+  textoBusqueda = e.target.value.trim().toLowerCase();
+  pintar();
+});
+
 async function cargar() {
   registros = await api("/registros");
+  pintar();
+}
+
+function pintar() {
   document.getElementById("tabla").innerHTML =
     registros
+      .filter(pasaFiltro)
       .map((r) => {
         // el backend devuelve los nombres de las etiquetas del registro
         const puestas = (r.etiquetas || []).map((nombre) => `<span class="badge text-bg-info me-1">${esc(nombre)}</span>`).join("");
         return `<tr>
-          <td>${fecha(r.fechaMovimiento)}</td>
-          <td>${r.tipoMovimiento}</td>
+          <td class="text-nowrap">${fecha(r.fechaMovimiento)}</td>
+          <td>${chipTipo(r.tipoMovimiento)}</td>
           <td>${esc(r.nombreCategoria || "Sin categoría")}</td>
           <td>${esc(r.descripcion)}</td>
-          <td class="text-end">${dinero(r.monto)}</td>
+          <td class="text-end text-nowrap">${montoConSigno(r.tipoMovimiento, r.monto)}</td>
           <td>${puestas || '<span class="text-muted small">—</span>'}</td>
           <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-primary" onclick="editar('${r.idRegistro}')">Editar</button>
@@ -57,7 +84,7 @@ async function cargar() {
           </td>
         </tr>`;
       })
-      .join("") || `<tr><td colspan="7" class="text-center text-muted">No hay registros</td></tr>`;
+      .join("") || `<tr><td colspan="7" class="text-center text-muted">${registros.length ? "Nada coincide con tu búsqueda" : "Todavía no hay registros. Toca «Nuevo registro» para empezar."}</td></tr>`;
 }
 
 // CREAR o ACTUALIZAR
@@ -122,8 +149,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar este registro?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar este registro?"))) return;
   intentar(async () => {
     await api(`/registros/${id}`, "DELETE");
     mensaje("Registro eliminado");

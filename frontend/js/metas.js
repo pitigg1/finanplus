@@ -16,32 +16,50 @@ async function iniciar() {
 
 // ================= METAS =================
 
-// LISTAR (el backend sabe quién es el usuario por el token)
+// Texto de tiempo restante hasta la fecha límite
+function tiempoRestante(fechaObjetivo, estado) {
+  if (estado === "COMPLETADA") return "¡Meta cumplida!";
+  if (!fechaObjetivo) return "Sin fecha límite";
+  const dias = Math.ceil((new Date(fechaObjetivo + "T00:00:00") - new Date()) / 86400000);
+  if (dias < 0) return `Venció hace ${-dias} ${-dias === 1 ? "día" : "días"}`;
+  if (dias === 0) return "Vence hoy";
+  if (dias === 1) return "Queda 1 día";
+  if (dias < 60) return `Quedan ${dias} días`;
+  return `Quedan ${Math.round(dias / 30)} meses`;
+}
+
+// LISTAR (el backend sabe quién es el usuario por el token): una tarjeta por meta
 async function cargar() {
   metas = await api("/metas");
   document.getElementById("tabla").innerHTML =
     metas
       .map((m) => {
         const porcentaje = m.montoObjetivo > 0 ? Math.round((m.montoActual / m.montoObjetivo) * 100) : 0;
-        return `<tr>
-          <td><strong>${esc(m.nombre)}</strong><br><small class="text-muted">${esc(m.descripcion)}</small></td>
-          <td class="text-end">${dinero(m.montoActual)}</td>
-          <td class="text-end">${dinero(m.montoObjetivo)}</td>
-          <td>
-            <div class="progress" role="progressbar" aria-valuenow="${porcentaje}" aria-valuemin="0" aria-valuemax="100">
-              <div class="progress-bar ${porcentaje >= 100 ? "bg-success" : ""}" style="width:${Math.min(100, porcentaje)}%">${porcentaje}%</div>
+        const falta = Math.max(0, Number(m.montoObjetivo) - Number(m.montoActual));
+        return `<div class="col-12 col-md-6 col-lg-4">
+          <div class="card meta-card h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div class="anillo ${porcentaje >= 100 ? "completa" : ""}" style="--p:${Math.min(100, porcentaje)}" role="img" aria-label="${porcentaje}% completado"><span>${porcentaje}%</span></div>
+                <div class="text-end d-flex flex-column align-items-end gap-1">${chipEstado(m.estado)}${chipPrioridad(m.prioridad)}</div>
+              </div>
+              <h2 class="h5 mt-3 mb-0">${esc(m.nombre)}</h2>
+              <p class="small text-muted mb-3">${esc(m.descripcion) || "&nbsp;"}</p>
+              <div class="meta-cifras">
+                <div><small>Ahorrado</small><strong>${dinero(m.montoActual)}</strong></div>
+                <div><small>Objetivo</small><strong>${dinero(m.montoObjetivo)}</strong></div>
+              </div>
+              <div class="small text-muted mt-2 mb-3"><i class="bi bi-clock"></i> ${tiempoRestante(m.fechaObjetivo, m.estado)}${falta > 0 ? ` · faltan ${dinero(falta)}` : ""}</div>
+              <div class="meta-acciones mt-auto">
+                <button class="btn btn-sm btn-outline-success" onclick="verAportes('${m.idMeta}')"><i class="bi bi-plus-circle"></i> Aportes</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="editar('${m.idMeta}')">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="eliminar('${m.idMeta}')" aria-label="Eliminar meta"><i class="bi bi-trash3"></i></button>
+              </div>
             </div>
-          </td>
-          <td>${m.fechaObjetivo || "-"}</td>
-          <td>${m.estado}</td>
-          <td class="text-end text-nowrap">
-            <button class="btn btn-sm btn-outline-success" onclick="verAportes('${m.idMeta}')">Aportes</button>
-            <button class="btn btn-sm btn-outline-primary" onclick="editar('${m.idMeta}')">Editar</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="eliminar('${m.idMeta}')">Eliminar</button>
-          </td>
-        </tr>`;
+          </div>
+        </div>`;
       })
-      .join("") || `<tr><td colspan="7" class="text-center text-muted">No hay metas</td></tr>`;
+      .join("") || `<div class="col-12"><div class="card"><div class="card-body vacio"><i class="bi bi-bullseye"></i><p>Todavía no tienes metas.<br>Toca «Nueva meta» para crear la primera.</p></div></div></div>`;
 }
 
 // CREAR o ACTUALIZAR
@@ -86,8 +104,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar esta meta y sus aportes?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar esta meta y sus aportes?"))) return;
   intentar(async () => {
     await api(`/metas/${id}`, "DELETE");
     mensaje("Meta eliminada");
@@ -173,8 +191,8 @@ function editarAporte(id, montoActual) {
 }
 
 // ELIMINAR un aporte
-function eliminarAporte(id) {
-  if (!confirm("¿Eliminar este aporte? Se descontará de la meta.")) return;
+async function eliminarAporte(id) {
+  if (!(await confirmar("¿Eliminar este aporte? Se descontará de la meta."))) return;
   intentar(async () => {
     await api(`/aportes/${id}`, "DELETE");
     mensaje("Aporte eliminado");

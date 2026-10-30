@@ -47,22 +47,20 @@ async function cargar() {
     categorias
       .map(
         (c) => `<tr>
-          <td>${c.idCategoria}</td>
-          <td>${esc(c.nombre)}</td>
-          <td><span class="badge text-bg-secondary">${c.tipo}</span></td>
-          <td class="fs-5">${esc(c.icono) || '<span class="text-muted small">—</span>'}</td>
-          <td>${
-            c.color
-              ? `<span class="d-inline-block rounded-circle border align-middle" style="width:22px;height:22px;background:${esc(c.color)}" title="${esc(c.color)}"></span>`
-              : '<span class="text-muted small">—</span>'
-          }</td>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <span class="avatar-cat" style="--c:${esc(c.color || "#8E8E93")}">${esc(c.icono) || '<i class="bi bi-tag-fill"></i>'}</span>
+              <strong>${esc(c.nombre)}</strong>
+            </div>
+          </td>
+          <td>${chipTipo(c.tipo)}</td>
           <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-primary" onclick="editar(${c.idCategoria})">Editar</button>
             <button class="btn btn-sm btn-outline-danger" onclick="eliminar(${c.idCategoria})">Eliminar</button>
           </td>
         </tr>`
       )
-      .join("") || `<tr><td colspan="6" class="text-center text-muted">No hay categorías</td></tr>`;
+      .join("") || `<tr><td colspan="3" class="text-center text-muted">Todavía no hay categorías</td></tr>`;
 }
 
 // CREAR o ACTUALIZAR
@@ -106,8 +104,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar esta categoría?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar esta categoría?"))) return;
   intentar(async () => {
     await api(`/categorias/${id}`, "DELETE");
     mensaje("Categoría eliminada");

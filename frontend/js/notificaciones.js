@@ -9,10 +9,10 @@ async function cargar() {
     notificaciones
       .map(
         (n) => `<tr class="${n.leida ? "" : "table-info"}">
-          <td>${n.leida ? '<span class="badge text-bg-secondary">Leída</span>' : '<span class="badge text-bg-primary">Nueva</span>'}</td>
+          <td>${n.leida ? chipTexto("Leída") : chipTexto("Nueva", "ahorro")}</td>
           <td><strong>${esc(n.titulo)}</strong><br><small class="text-muted">${esc(n.mensaje)}</small></td>
-          <td>${n.tipoAlerta}</td>
-          <td>${n.nivelPrioridad}</td>
+          <td>${chipTexto(humano(n.tipoAlerta))}</td>
+          <td>${chipPrioridad(n.nivelPrioridad)}</td>
           <td>${fecha(n.fechaGeneracion)}</td>
           <td class="text-end text-nowrap">
             ${n.leida ? "" : `<button class="btn btn-sm btn-outline-primary" onclick="marcarLeida('${n.idNotificacion}')">Marcar leída</button>`}
@@ -46,8 +46,8 @@ function marcarTodas() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar esta notificación?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar esta notificación?"))) return;
   intentar(async () => {
     await api(`/notificaciones/${id}`, "DELETE");
     mensaje("Notificación eliminada");

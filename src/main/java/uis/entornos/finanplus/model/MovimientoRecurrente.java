@@ -6,6 +6,7 @@ import  com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import uis.entornos.finanplus.enums.Frecuencia;
 import uis.entornos.finanplus.enums.TipoMovimiento;
@@ -20,6 +21,10 @@ public class MovimientoRecurrente {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_recurrencia", columnDefinition = "CHAR(36)")
     private String idRecurrencia;
+
+    @Size(max = 100, message = "El nombre no puede exceder los 100 caracteres")
+    @Column(length = 100)
+    private String nombre;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)

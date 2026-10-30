@@ -20,12 +20,12 @@ async function cargar() {
         const color = porcentaje > 100 ? "bg-danger" : porcentaje >= 80 ? "bg-warning" : "bg-success";
         return `<tr>
           <td>${esc(p.nombreCategoria)}</td>
-          <td>${p.mes}/${p.anio}</td>
+          <td class="text-nowrap">${NOMBRES_MESES[p.mes - 1] || p.mes} ${p.anio}</td>
           <td class="text-end">${dinero(p.limiteGasto)}</td>
           <td class="text-end">${dinero(p.gastoActual)}</td>
           <td>
             <div class="progress" role="progressbar" aria-valuenow="${porcentaje}" aria-valuemin="0" aria-valuemax="100">
-              <div class="progress-bar ${color}" style="width:${Math.min(100, porcentaje)}%">${porcentaje}%</div>
+              <div class="progress-bar ${color}" style="width:${Math.min(100, porcentaje)}%;min-width:${porcentaje > 0 ? 40 : 0}px">${porcentaje}%</div>
             </div>
           </td>
           <td class="text-end text-nowrap">
@@ -45,7 +45,7 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
 
     const idCategoriaVal = document.getElementById("categoria").value;
     if (!idCategoriaVal) {
-      alert("Por favor selecciona una categoría");
+      mensaje("Por favor selecciona una categoría", "warning");
       return;
     }
 
@@ -88,8 +88,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar este presupuesto?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar este presupuesto?"))) return;
   intentar(async () => {
     await api(`/presupuestos/${id}`, "DELETE");
     mensaje("Presupuesto eliminado");

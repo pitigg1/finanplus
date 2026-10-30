@@ -68,7 +68,7 @@ function pintarTarjetas(m) {
     tarjeta("Score financiero", m.scoreFinanciero == null ? "—" : Math.round(Number(m.scoreFinanciero)) + " / 100",
       "Una nota de 0 a 100: entre más ahorras, más alta.") +
     tarjeta("Riesgo", m.nivelRiesgo
-      ? `<span class="badge text-bg-${colorRiesgo(m.nivelRiesgo)}">${m.nivelRiesgo}</span>` : "—", textoRiesgo);
+      ? chipRiesgo(m.nivelRiesgo) : "—", textoRiesgo);
 }
 
 // LISTAR (solo lectura: las métricas las calcula el backend, una por mes)
@@ -90,7 +90,7 @@ async function cargar() {
           <td class="text-end ${Number(m.flujoNeto) < 0 ? "text-danger" : ""}">${dinero(m.flujoNeto)}</td>
           <td class="text-end">${m.tasaAhorro == null ? "—" : porcentaje(m.tasaAhorro) + "%"}</td>
           <td class="text-end">${m.scoreFinanciero == null ? "—" : Math.round(Number(m.scoreFinanciero))}</td>
-          <td>${m.nivelRiesgo ? `<span class="badge text-bg-${colorRiesgo(m.nivelRiesgo)}">${m.nivelRiesgo}</span>` : "—"}</td>
+          <td>${m.nivelRiesgo ? chipRiesgo(m.nivelRiesgo) : "—"}</td>
         </tr>`
       )
       .join("") || `<tr><td colspan="7" class="text-center text-muted">No hay métricas todavía</td></tr>`;

@@ -8,10 +8,10 @@ async function cargar() {
     usuarios
       .map(
         (u) => `<tr>
-          <td>${esc(u.nombre)} ${u.idUsuario === usuarioActual() ? '<span class="badge text-bg-success">En uso</span>' : ""}</td>
+          <td>${esc(u.nombre)} ${u.idUsuario === usuarioActual() ? '<span class="chip chip-ahorro ms-1">Tú</span>' : ""}</td>
           <td>${esc(u.correo)}</td>
           <td>${esc(u.pais)}</td>
-          <td>${u.estado}</td>
+          <td>${chipTexto(humano(u.estado), { ACTIVO: "ingreso", SUSPENDIDO: "gasto" }[u.estado] || "otro")}</td>
           <td class="text-end">
             <button class="btn btn-sm btn-outline-success" onclick="usar('${u.idUsuario}')">Usar</button>
             <button class="btn btn-sm btn-outline-primary" onclick="editar('${u.idUsuario}')">Editar</button>
@@ -73,8 +73,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar este usuario y todos sus datos?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar este usuario y todos sus datos?"))) return;
   intentar(async () => {
     await api(`/usuarios/${id}`, "DELETE");
     if (id === usuarioActual()) localStorage.removeItem("usuarioId");

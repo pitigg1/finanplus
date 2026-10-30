@@ -344,6 +344,8 @@ CREATE TABLE Movimientos_Recurrentes (
 
     id_usuario CHAR(36) NOT NULL,
 
+    nombre VARCHAR(100),
+
     tipo_movimiento ENUM(
         'INGRESO',
         'GASTO',

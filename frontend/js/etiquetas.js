@@ -8,15 +8,14 @@ async function cargar() {
     etiquetas
       .map(
         (e) => `<tr>
-          <td>${e.idEtiqueta}</td>
-          <td>${esc(e.nombre)}</td>
+          <td><span class="chip chip-inversion"><i class="bi bi-tag-fill"></i> ${esc(e.nombre)}</span></td>
           <td class="text-end">
             <button class="btn btn-sm btn-outline-primary" onclick="editar(${e.idEtiqueta})">Editar</button>
             <button class="btn btn-sm btn-outline-danger" onclick="eliminar(${e.idEtiqueta})">Eliminar</button>
           </td>
         </tr>`
       )
-      .join("") || `<tr><td colspan="3" class="text-center text-muted">No hay etiquetas</td></tr>`;
+      .join("") || `<tr><td colspan="2" class="text-center text-muted">Todavía no hay etiquetas</td></tr>`;
 }
 
 // CREAR o ACTUALIZAR
@@ -48,8 +47,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar esta etiqueta?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar esta etiqueta?"))) return;
   intentar(async () => {
     await api(`/etiquetas/${id}`, "DELETE");
     mensaje("Etiqueta eliminada");

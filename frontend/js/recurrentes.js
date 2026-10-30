@@ -15,12 +15,13 @@ async function cargar() {
     recurrentes
       .map(
         (m) => `<tr>
+          <td><strong>${esc(m.nombre || m.categoria.nombre)}</strong></td>
           <td>${esc(m.categoria.nombre)}</td>
-          <td>${m.tipoMovimiento}</td>
+          <td>${chipTipo(m.tipoMovimiento)}</td>
           <td class="text-end">${dinero(m.montoEstimado)}</td>
-          <td>${m.frecuencia}</td>
-          <td>${m.proximaFecha}</td>
-          <td>${m.activo ? '<span class="badge text-bg-success">Activo</span>' : '<span class="badge text-bg-secondary">Pausado</span>'}</td>
+          <td>${chipTexto(humano(m.frecuencia))}</td>
+          <td class="text-nowrap">${m.proximaFecha}</td>
+          <td>${m.activo ? chipTexto("Activo", "ingreso") : chipTexto("Pausado")}</td>
           <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-secondary" onclick="pausarActivar('${m.idRecurrencia}')">${m.activo ? "Pausar" : "Activar"}</button>
             <button class="btn btn-sm btn-outline-primary" onclick="editar('${m.idRecurrencia}')">Editar</button>
@@ -28,12 +29,13 @@ async function cargar() {
           </td>
         </tr>`
       )
-      .join("") || `<tr><td colspan="7" class="text-center text-muted">No hay movimientos recurrentes</td></tr>`;
+      .join("") || `<tr><td colspan="8" class="text-center text-muted">Todavía no hay movimientos recurrentes</td></tr>`;
 }
 
 // Arma el JSON que espera el backend
-function armarDatos(idCategoria, tipo, monto, frecuencia, proximaFecha, activo) {
+function armarDatos(idCategoria, tipo, monto, frecuencia, proximaFecha, activo, nombre) {
   return {
+    nombre: nombre ? nombre.trim() : null,
     usuario: { idUsuario: usuarioId },
     categoria: { idCategoria: idCategoria },
     tipoMovimiento: tipo,
@@ -55,7 +57,8 @@ document.getElementById("formulario").addEventListener("submit", (e) => {
       leerMonto("monto"),
       document.getElementById("frecuencia").value,
       document.getElementById("fecha").value,
-      document.getElementById("activo").checked
+      document.getElementById("activo").checked,
+      document.getElementById("nombre").value
     );
     if (id) await api(`/recurrentes/${id}`, "PUT", datos);
     else await api("/recurrentes", "POST", datos);
@@ -70,7 +73,7 @@ function pausarActivar(id) {
   const m = recurrentes.find((x) => x.idRecurrencia === id);
   intentar(async () => {
     await api(`/recurrentes/${id}`, "PUT",
-      armarDatos(m.categoria.idCategoria, m.tipoMovimiento, m.montoEstimado, m.frecuencia, m.proximaFecha, !m.activo));
+      armarDatos(m.categoria.idCategoria, m.tipoMovimiento, m.montoEstimado, m.frecuencia, m.proximaFecha, !m.activo, m.nombre));
     mensaje(m.activo ? "Movimiento pausado" : "Movimiento activado");
     await cargar();
   });
@@ -79,6 +82,7 @@ function pausarActivar(id) {
 function editar(id) {
   const m = recurrentes.find((x) => x.idRecurrencia === id);
   document.getElementById("id").value = m.idRecurrencia;
+  document.getElementById("nombre").value = m.nombre || "";
   document.getElementById("categoria").value = m.categoria.idCategoria;
   document.getElementById("tipo").value = m.tipoMovimiento;
   ponerMonto("monto", m.montoEstimado);
@@ -95,8 +99,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar este movimiento recurrente?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar este movimiento recurrente?"))) return;
   intentar(async () => {
     await api(`/recurrentes/${id}`, "DELETE");
     mensaje("Movimiento eliminado");

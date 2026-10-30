@@ -10,11 +10,11 @@ async function cargar() {
       .map(
         (i) => `<tr>
           <td>${esc(i.nombreActivo)}</td>
-          <td>${i.tipoActivo}</td>
+          <td>${chipTexto(humano(i.tipoActivo), "inversion")}</td>
           <td class="text-end">${dinero(i.montoInvertido)}</td>
           <td class="text-end">${dinero(i.valorActual)}</td>
           <td class="text-end">${i.rentabilidad == null ? "-" : i.rentabilidad + "%"}</td>
-          <td>${i.riesgo}</td>
+          <td>${chipRiesgo(i.riesgo)}</td>
           <td>${i.fechaInversion}</td>
           <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-primary" onclick="editar('${i.idInversion}')">Editar</button>
@@ -73,8 +73,8 @@ function limpiar() {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar esta inversión?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar esta inversión?"))) return;
   intentar(async () => {
     await api(`/inversiones/${id}`, "DELETE");
     mensaje("Inversión eliminada");

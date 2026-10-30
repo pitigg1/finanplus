@@ -10,11 +10,11 @@ async function cargar() {
       .map(
         (r) => `<tr>
           <td><strong>${esc(r.titulo)}</strong><br><small class="text-muted">${esc(r.descripcion)}</small></td>
-          <td>${esc(r.tipoRecomendacion)}</td>
-          <td>${r.nivelPrioridad}</td>
+          <td>${chipTexto(humano(r.tipoRecomendacion))}</td>
+          <td>${chipPrioridad(r.nivelPrioridad)}</td>
           <td class="text-end">${r.scoreConfianza == null ? "-" : r.scoreConfianza + "%"}</td>
           <td>${fecha(r.fechaGeneracion)}</td>
-          <td>${r.fueAplicada ? '<span class="badge text-bg-success">Sí</span>' : '<span class="badge text-bg-secondary">No</span>'}</td>
+          <td>${r.fueAplicada ? chipTexto("Aplicada", "ingreso") : chipTexto("Pendiente")}</td>
           <td class="text-end text-nowrap">
             <button class="btn btn-sm btn-outline-success" onclick="marcar('${r.idRecomendacion}')">${r.fueAplicada ? "Desmarcar" : "Marcar aplicada"}</button>
             <button class="btn btn-sm btn-outline-danger" onclick="eliminar('${r.idRecomendacion}')">Eliminar</button>
@@ -35,8 +35,8 @@ function marcar(id) {
 }
 
 // ELIMINAR
-function eliminar(id) {
-  if (!confirm("¿Eliminar esta recomendación?")) return;
+async function eliminar(id) {
+  if (!(await confirmar("¿Eliminar esta recomendación?"))) return;
   intentar(async () => {
     await api(`/recomendaciones/${id}`, "DELETE");
     mensaje("Recomendación eliminada");
