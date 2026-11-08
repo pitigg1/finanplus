@@ -10,6 +10,11 @@ import PerfilPage from './pages/PerfilPage';
 import RecurrentesPage from './pages/RecurrentesPage';
 import MetricasPage from './pages/MetricasPage';
 
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('jwtToken');
+  return token ? children : <Navigate to="/login" />;
+};
+
 function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('tema') === 'oscuro' ? 'dark' : 'light';
@@ -20,14 +25,22 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<Layout><IndexPage /></Layout>} />
-        <Route path="/registros" element={<Layout><RegistrosPage /></Layout>} />
-        <Route path="/categorias" element={<Layout><CategoriasPage /></Layout>} />
-        <Route path="/metas" element={<Layout><MetasPage /></Layout>} />
-        <Route path="/perfil" element={<Layout><PerfilPage /></Layout>} />
-        <Route path="/recurrentes" element={<Layout><RecurrentesPage /></Layout>} />
-        <Route path="/metricas" element={<Layout><MetricasPage /></Layout>} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/*" element={
+          <ProtectedRoute>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<IndexPage />} />
+                <Route path="/registros" element={<RegistrosPage />} />
+                <Route path="/categorias" element={<CategoriasPage />} />
+                <Route path="/metas" element={<MetasPage />} />
+                <Route path="/perfil" element={<PerfilPage />} />
+                <Route path="/recurrentes" element={<RecurrentesPage />} />
+                <Route path="/metricas" element={<MetricasPage />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </Layout>
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );
