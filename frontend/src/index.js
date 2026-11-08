@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 // Import global styles
-import './css/bootstrap.min.css';
-import './css/estilos.css';
+// Ensure these paths are correct relative to src/index.js
+// If the files are missing, the build will fail.
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
