@@ -16,6 +16,7 @@ build/
 # Environment variables and secrets
 .env
 application-local.properties
+application.properties
 application-secret.properties
 # OS
 .DS_Store
