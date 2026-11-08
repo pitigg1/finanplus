@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import IndexPage from './pages/IndexPage';
@@ -11,6 +11,11 @@ import RecurrentesPage from './pages/RecurrentesPage';
 import MetricasPage from './pages/MetricasPage';
 
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('tema') === 'oscuro' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+  }, []);
+
   return (
     <Router>
       <Routes>
