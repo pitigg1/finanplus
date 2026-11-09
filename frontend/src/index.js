@@ -1,11 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { inicializarTema } from './lib/tema';
 
-// Import global styles
-// Ensure these paths are correct relative to src/index.js
-// If the files are missing, the build will fail.
+import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import './styles/apple.css';
+import './styles/vistas.css';
+import './styles/ios.css';
+import './styles/inicio.css';
+
+inicializarTema();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

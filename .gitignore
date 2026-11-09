@@ -24,3 +24,7 @@ Thumbs.db
 
 ### Fotos de perfil subidas por los usuarios ###
 uploads/
+.aider*
+
+# node modules
+frontend/node_modules
