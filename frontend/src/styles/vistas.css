@@ -1,0 +1,160 @@
+/* ==========================================================================
+   FinanPlus · sistema de vistas
+   Encabezado, hojas (formularios emergentes), avisos, listas, tarjetas y vidrio.
+   Se carga después de apple.css.
+   ========================================================================== */
+
+/* Entrada suave de cada página */
+@keyframes aparecer { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+main.container { animation: aparecer .4s var(--ease) both; }
+
+/* ---- Encabezado de página ---- */
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.page-head h1 { font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; margin: 0; }
+.page-sub { margin: 6px 0 0; color: var(--label-2); font-size: 17px; }
+.btn-nuevo { flex: none; box-shadow: 0 4px 14px rgba(0, 122, 255, .3); }
+.btn-nuevo i { font-size: 18px; }
+@media (max-width: 575.98px) {
+  .page-head { align-items: center; }
+  .page-head h1 { font-size: 28px; }
+  .page-sub { font-size: 15px; }
+  .btn-nuevo { width: 44px; padding: 0; }
+  .btn-nuevo span { display: none; }
+}
+
+/* ---- Barra superior y pestañas con efecto vidrio (con alternativa sólida) ---- */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .navbar.apple-nav { background: rgba(255, 255, 255, .72) !important; -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px); }
+  [data-bs-theme="dark"] .navbar.apple-nav { background: rgba(28, 28, 30, .72) !important; }
+  @media (max-width: 767.98px) {
+    .tab-bar { background: rgba(255, 255, 255, .78); -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px); }
+    [data-bs-theme="dark"] .tab-bar { background: rgba(28, 28, 30, .78); }
+  }
+}
+
+/* ---- Avisos flotantes (como las notificaciones de iOS) ---- */
+#alerta { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); z-index: 2000; width: min(92vw, 460px); pointer-events: none; }
+#alerta .alert {
+  pointer-events: auto; display: flex; align-items: center; gap: 12px; margin: 0 0 8px;
+  background: var(--bg-card); color: var(--label); border: .5px solid var(--separator);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .2); border-radius: 16px; padding: 14px 44px 14px 16px; font-weight: 500;
+}
+#alerta .alert > i { font-size: 22px; flex: none; }
+#alerta .alert-success > i { color: var(--system-green); }
+#alerta .alert-danger > i { color: var(--system-red); }
+#alerta .alert-warning > i { color: var(--system-orange); }
+#alerta .alert-info > i { color: var(--system-blue); }
+#alerta .btn-close { top: 50%; transform: translateY(-50%); padding: 14px; }
+
+/* ---- Hoja (formulario emergente) ---- */
+.hoja .modal-content {
+  background: var(--bg-card); border: 0; border-radius: 26px; color: var(--label);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .35);
+}
+.hoja .modal-body { padding: 28px 28px 24px; }
+.hoja .modal-body h2 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 20px; padding-right: 48px; }
+.hoja-cerrar {
+  position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border: 0; border-radius: 50%; z-index: 3;
+  background: rgba(120, 120, 128, .16); color: var(--label-2); display: grid; place-items: center; font-size: 14px;
+  transition: background-color .2s var(--ease), transform .1s var(--ease);
+}
+.hoja-cerrar:hover { background: rgba(120, 120, 128, .28); }
+.hoja-cerrar:active { transform: scale(.92); }
+.modal-backdrop { --bs-backdrop-bg: #000; --bs-backdrop-opacity: .38; }
+.modal-backdrop.show { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.modal.fade .modal-dialog { transition: transform .38s cubic-bezier(.175, .885, .32, 1.1), opacity .25s; }
+.modal.fade:not(.show) .modal-dialog { transform: translateY(24px) scale(.97); }
+@media (max-width: 575.98px) {
+  .hoja .modal-dialog { margin: 0; max-width: none; min-height: 100%; align-items: flex-end; }
+  .hoja .modal-content { border-radius: 26px 26px 0 0; max-height: 92vh; }
+  .hoja .modal-content::before { content: ""; display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--system-gray4); margin: 8px auto 0; flex: none; }
+  .hoja .modal-body { padding: 20px 20px calc(24px + env(safe-area-inset-bottom)); }
+  .hoja.fade:not(.show) .modal-dialog { transform: translateY(100%); }
+}
+
+/* ---- Alerta de confirmación estilo iOS ---- */
+.alerta-ios .modal-dialog { max-width: 290px; }
+.alerta-ios .modal-content { background: var(--bg-card); border: 0; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .35); }
+.alerta-cuerpo { padding: 22px 20px 18px; text-align: center; }
+.alerta-cuerpo h2 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0 0 6px; }
+.alerta-cuerpo p { font-size: 13px; color: var(--label-2); margin: 0; }
+.alerta-botones { display: flex; border-top: .5px solid var(--separator); }
+.alerta-botones button {
+  flex: 1; min-height: 46px; border: 0; background: transparent; font-size: 17px; color: var(--system-blue);
+  transition: background-color .15s var(--ease);
+}
+.alerta-botones button + button { border-left: .5px solid var(--separator); font-weight: 600; }
+.alerta-botones button:active { background: var(--bg-fill); }
+.alerta-botones .peligro { color: var(--system-red); }
+
+/* ---- Barra de herramientas (filtros y búsqueda) ---- */
+.toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.toolbar .segmented { margin: 0; flex: 1 1 380px; }
+.toolbar .segmented button { font-size: 14px; padding: 0 8px; white-space: nowrap; }
+.buscador { position: relative; flex: 1 1 200px; margin: 0; }
+.buscador i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--label-2); pointer-events: none; }
+.buscador input {
+  width: 100%; min-height: 44px; border: 0; border-radius: var(--radius-md); background: rgba(120, 120, 128, .12);
+  color: var(--label); padding: 0 14px 0 40px; font-size: 17px;
+}
+.buscador input::placeholder { color: var(--label-2); }
+.buscador input:focus { outline: 0; box-shadow: 0 0 0 4px rgba(0, 122, 255, .3); background: var(--bg-card); }
+
+/* ---- Categorías: avatar con el icono y el color ---- */
+.avatar-cat {
+  --c: #8E8E93; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; font-size: 20px;
+  background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c);
+}
+
+/* ---- Metas: tarjeta con anillo de progreso ---- */
+.anillo {
+  --p: 0; --ring: var(--system-blue); width: 76px; height: 76px; border-radius: 50%; position: relative; display: grid; place-items: center;
+  background: conic-gradient(var(--ring) calc(var(--p) * 1%), var(--system-gray5) 0);
+}
+.anillo::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--bg-card); }
+.anillo span { position: relative; font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+.anillo.completa { --ring: var(--system-green); }
+.meta-card { transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
+.meta-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 0, 0, .12); }
+.meta-cifras { display: flex; gap: 24px; }
+.meta-cifras small { display: block; color: var(--label-2); font-size: 12px; }
+.meta-cifras strong { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.meta-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.meta-acciones .btn-outline-danger { padding: 0; width: 34px; }
+
+/* ---- Estados vacíos ---- */
+.vacio { text-align: center; padding: 36px 16px !important; color: var(--label-2); }
+.vacio i { font-size: 44px; color: var(--system-gray4); display: block; margin-bottom: 10px; }
+.vacio p { margin: 0; font-size: 16px; }
+td.fila-vacia { text-align: center; color: var(--label-2) !important; padding: 36px 12px !important; }
+
+/* ---- Filas resaltadas (notificaciones sin leer) ---- */
+.table-info { --bs-table-bg: rgba(0, 122, 255, .08); --bs-table-hover-bg: rgba(0, 122, 255, .12); --bs-table-color: var(--label); }
+
+/* ---- Tablas en celular: cada fila es una tarjeta "campo — valor" ---- */
+@media (max-width: 767.98px) {
+  .card-body.table-responsive { padding: 4px 8px; overflow: visible; }
+  .table { display: block; margin: 0; }
+  .table thead { display: none; }
+  .table tbody, .table tr { display: block; width: 100%; }
+  .table tbody tr { padding: 10px 6px; border-bottom: .5px solid var(--separator); }
+  .table tbody tr:last-child { border-bottom: 0; }
+  .table > :not(caption) > * > * { background: transparent; box-shadow: none; }
+  .table td {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 6px 10px !important; border: 0 !important; text-align: right; font-size: 16px;
+  }
+  .table td::before { content: attr(data-label); color: var(--label-2); font-size: 13px; font-weight: 500; text-align: left; flex: none; }
+  .table td[data-label="Acciones"] { justify-content: flex-end; padding-top: 10px !important; }
+  .table td[data-label="Acciones"]::before, .table td.fila-vacia::before, .table td[data-label=""]::before { display: none; }
+  .table td.fila-vacia { display: block; }
+}
+
+/* ---- Ajustes de ancho y tipografía ---- */
+main.container { max-width: 1040px; }
+.apple-nav #usuarioMenu, .apple-nav #usuarioMenu .btn, .apple-nav #usuarioMenu span { white-space: nowrap; }
+@media (min-width: 768px) {
+  .table { font-size: 15px; }
+  .table > :not(caption) > * > * { padding: 14px 10px; }
+  .table .btn-sm { padding: 0 12px; }
+}

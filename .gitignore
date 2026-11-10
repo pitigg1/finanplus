@@ -16,7 +16,7 @@ build/
 # Environment variables and secrets
 .env
 application-local.properties
-application.properties
+src/main/resources/application.properties
 application-secret.properties
 # OS
 .DS_Store
@@ -24,3 +24,7 @@ Thumbs.db
 
 ### Fotos de perfil subidas por los usuarios ###
 uploads/
+.aider*
+
+# node modules
+frontend/node_modules
