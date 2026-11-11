@@ -9,14 +9,13 @@ import { BotonNuevo, FilaVacia, PageHead, TarjetaTabla } from '../components/Pie
 import Hoja, { FormularioHoja } from '../components/Hoja';
 import { Campo, Entrada, HeroMonto, Interruptor, SelectorCategorias, Segmentado, opciones } from '../components/Campos';
 
-const TIPOS = opciones(['GASTO', 'INGRESO', 'AHORRO', 'INVERSION']);
 const FRECUENCIAS = opciones(['MENSUAL', 'SEMANAL', 'DIARIA', 'ANUAL']);
 const COLUMNAS = [
   { t: 'Nombre' }, { t: 'Categoría' }, { t: 'Tipo' }, { t: 'Monto', className: 'text-end' },
   { t: 'Frecuencia' }, { t: 'Próxima fecha' }, { t: 'Estado' }, { t: 'Acciones', className: 'text-end' },
 ];
 
-const formVacio = () => ({ id: '', nombre: '', categoria: '', tipo: 'GASTO', monto: 0, frecuencia: 'MENSUAL', fecha: '', activo: true });
+const formVacio = () => ({ id: '', nombre: '', categoria: '', tipo: '', monto: 0, frecuencia: 'MENSUAL', fecha: '', activo: true });
 
 export default function RecurrentesPage() {
   const { mensaje, intentar } = useAviso();
@@ -45,12 +44,18 @@ export default function RecurrentesPage() {
     nombre: nombre ? nombre.trim() : null,
     usuario: { idUsuario: usuarioId },
     categoria: { idCategoria: idCategoria },
-    tipoMovimiento: tipo,
+    tipoMovimiento: tipo || undefined, // el backend exige que sea el de la categoría
     montoEstimado: monto,
     frecuencia: frecuencia,
     proximaFecha: proximaFecha,
     activo: activo,
   });
+
+  // El tipo del movimiento ES el de su categoría: se llena solo al elegirla y no se puede cambiar a mano
+  const elegirCategoria = (id) => {
+    const categoria = categorias.find((c) => String(c.idCategoria) === id);
+    poner({ categoria: id, tipo: categoria ? categoria.tipo : '' });
+  };
 
   const nuevo = () => { setForm(formVacio()); setAbierta(true); };
 
@@ -60,7 +65,7 @@ export default function RecurrentesPage() {
       id: m.idRecurrencia,
       nombre: m.nombre || '',
       categoria: String(m.categoria.idCategoria),
-      tipo: m.tipoMovimiento,
+      tipo: (categorias.find((c) => c.idCategoria === m.categoria.idCategoria) || {}).tipo || m.tipoMovimiento,
       monto: Number(m.montoEstimado),
       frecuencia: m.frecuencia,
       fecha: m.proximaFecha,
@@ -114,10 +119,11 @@ export default function RecurrentesPage() {
               <Entrada maxLength={100} placeholder="Ej. Netflix, Arriendo, Sueldo" requerido value={form.nombre} onChange={(e) => poner({ nombre: e.target.value })} />
             </Campo>
             <Campo col="col-md-4" tipo="bloque" etiqueta="Categoría">
-              <SelectorCategorias categorias={categorias} valor={form.categoria} onChange={(categoria) => poner({ categoria })} />
+              <SelectorCategorias categorias={categorias} valor={form.categoria} onChange={elegirCategoria} />
             </Campo>
-            <Campo col="col-md-2" tipo="seg" etiqueta="Tipo">
-              <Segmentado opciones={TIPOS} valor={form.tipo} onChange={(tipo) => poner({ tipo })} />
+            <Campo col="col-md-2" tipo="bloque" etiqueta="Tipo">
+              {form.tipo ? <ChipTipo tipo={form.tipo} /> : <span className="text-muted">—</span>}
+              <div className="form-text">Es el de la categoría</div>
             </Campo>
             <Campo col="col-md-2" tipo="seg" etiqueta="Frecuencia">
               <Segmentado opciones={FRECUENCIAS} valor={form.frecuencia} onChange={(frecuencia) => poner({ frecuencia })} />

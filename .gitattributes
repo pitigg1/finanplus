@@ -1,2 +1,13 @@
+# Todo el texto del proyecto usa LF; solo los scripts de Windows usan CRLF.
+* text=auto eol=lf
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Archivos binarios: git no debe tocarlos
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.docx binary
+*.zip binary
+*.jar binary

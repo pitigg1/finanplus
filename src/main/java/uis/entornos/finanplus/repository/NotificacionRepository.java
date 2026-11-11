@@ -5,10 +5,14 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import uis.entornos.finanplus.enums.TipoAlerta;
 import uis.entornos.finanplus.model.Notificacion;
 
 @Repository
 public interface NotificacionRepository extends JpaRepository<Notificacion, String> {
 	List<Notificacion> findByUsuarioIdUsuario(String idUsuario);
+
+	// Evita crear dos veces la misma alerta automática (mismo tipo y mismo elemento)
+	boolean existsByUsuarioIdUsuarioAndTipoAlertaAndIdReferencia(String idUsuario, TipoAlerta tipoAlerta, String idReferencia);
 
 }

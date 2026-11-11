@@ -10,4 +10,7 @@ import uis.entornos.finanplus.model.AporteMeta;
 @Repository
 public interface AporteMetaRepository extends JpaRepository<AporteMeta, String> {
     List<AporteMeta> findByMetaIdMeta(String idMeta);
+
+    // ¿Ese registro ya se usó en algún aporte?
+    boolean existsByRegistroIdRegistro(String idRegistro);
 }

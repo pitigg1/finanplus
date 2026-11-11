@@ -11,4 +11,6 @@ import uis.entornos.finanplus.model.Inversion;
 public interface InversionRepository extends JpaRepository<Inversion, String> {
 	List<Inversion> findByUsuarioIdUsuario(String idUsuario);
 
+	List<Inversion> findByUsuarioCorreo(String correo);
+
 }

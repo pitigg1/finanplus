@@ -10,6 +10,7 @@ build/
 .vscode/
 .settings/
 .classpath
+.editorconfig
 # Logs and temps
 *.log
 *.tmp

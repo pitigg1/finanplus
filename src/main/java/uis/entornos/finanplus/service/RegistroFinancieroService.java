@@ -1,11 +1,13 @@
 package uis.entornos.finanplus.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uis.entornos.finanplus.dto.RegistroFinancieroRequestDTO;
 import uis.entornos.finanplus.dto.RegistroFinancieroResponseDTO;
 import uis.entornos.finanplus.enums.TipoMovimiento;
+import uis.entornos.finanplus.event.EvaluarAlertasEvent;
 import uis.entornos.finanplus.model.Categoria;
 import uis.entornos.finanplus.model.Etiqueta;
 import uis.entornos.finanplus.model.RegistroFinanciero;
@@ -29,6 +31,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
     private final CategoriaRepository categoriaRepository;
     private final EtiquetaRepository etiquetaRepository; // Inyección añadida
     private final uis.entornos.finanplus.security.SeguridadService seguridad;
+    private final ApplicationEventPublisher eventPublisher; // dispara la revisión de alertas automáticas
 
     @Override
     @Transactional
@@ -40,12 +43,9 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
         seguridad.exigirCategoriaVisible(categoria);
 
-        TipoMovimiento tipoMovimiento;
-        try {
-            tipoMovimiento = TipoMovimiento.valueOf(request.getTipoMovimiento().toUpperCase());
-        } catch (Exception e) {
-            tipoMovimiento = TipoMovimiento.GASTO;
-        }
+        // El tipo es el de la categoría: si el cliente manda otro distinto, se rechaza (antes se aceptaba cualquiera,
+        // y un tipo inválido se convertía en GASTO sin avisar).
+        TipoMovimiento tipoMovimiento = TipoDeCategoria.resolver(categoria, request.getTipoMovimiento());
 
         // Cargar etiquetas enviadas en la petición
         Set<Etiqueta> etiquetas = new HashSet<>();
@@ -66,6 +66,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
                 .build();
 
         RegistroFinanciero guardado = registroRepository.save(registro);
+        eventPublisher.publishEvent(new EvaluarAlertasEvent(correoUsuario)); // se atiende tras el commit
         return mapearAResponseDTO(guardado);
     }
 
@@ -111,12 +112,9 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
         seguridad.exigirCategoriaVisible(categoria);
 
-        TipoMovimiento tipoMovimiento;
-        try {
-            tipoMovimiento = TipoMovimiento.valueOf(request.getTipoMovimiento().toUpperCase());
-        } catch (Exception e) {
-            tipoMovimiento = TipoMovimiento.GASTO;
-        }
+        // El tipo es el de la categoría: si el cliente manda otro distinto, se rechaza (antes se aceptaba cualquiera,
+        // y un tipo inválido se convertía en GASTO sin avisar).
+        TipoMovimiento tipoMovimiento = TipoDeCategoria.resolver(categoria, request.getTipoMovimiento());
 
         // Actualizar datos básicos
         registroExistente.setCategoria(categoria);
@@ -134,6 +132,7 @@ public class RegistroFinancieroService implements IRegistroFinancieroService {
         }
 
         RegistroFinanciero actualizado = registroRepository.save(registroExistente);
+        eventPublisher.publishEvent(new EvaluarAlertasEvent(correoUsuario)); // se atiende tras el commit
         return mapearAResponseDTO(actualizado);
     }
 

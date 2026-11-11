@@ -14,6 +14,8 @@ import java.util.List;
 public interface RegistroFinancieroRepository extends JpaRepository<RegistroFinanciero, String> {
     List<RegistroFinanciero> findByUsuarioCorreo(String correo);
 
+    boolean existsByCategoriaIdCategoria(Integer idCategoria);
+
     // Suma lo que un usuario registró de un tipo (ej. GASTO) en una categoría durante un mes y año
     @Query("""
             SELECT COALESCE(SUM(r.monto), 0) FROM RegistroFinanciero r

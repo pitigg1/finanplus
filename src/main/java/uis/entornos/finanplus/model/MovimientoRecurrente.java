@@ -36,7 +36,7 @@ public class MovimientoRecurrente {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Categoria categoria;
 
-    @NotNull(message = "El tipo de movimiento es obligatorio")
+    // Opcional al enviarlo: el service lo iguala al tipo de la categoría.
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_movimiento")
     private TipoMovimiento tipoMovimiento;

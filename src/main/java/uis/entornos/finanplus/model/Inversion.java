@@ -45,6 +45,10 @@ public class Inversion {
     @Column(name = "valor_actual", nullable = false, precision = 15, scale = 2)
     private BigDecimal valorActual;
 
+    // Rentabilidad efectiva ANUAL en %. Es la tasa con la que se pronostica esta inversión;
+    // si queda vacía, el pronóstico usa la tasa por defecto.
+    @DecimalMin(value = "-99.0", message = "La rentabilidad no puede ser menor que -99 %")
+    @DecimalMax(value = "1000.0", message = "La rentabilidad no puede ser mayor que 1000 %")
     @Column(precision = 8, scale = 2)
     private BigDecimal rentabilidad;
 
