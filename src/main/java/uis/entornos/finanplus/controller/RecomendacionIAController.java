@@ -9,15 +9,24 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import uis.entornos.finanplus.model.RecomendacionIA;
-import uis.entornos.finanplus.service.RecomendacionIAService;
+import uis.entornos.finanplus.service.IRecomendacionIAService;
 
 @RestController
 @RequestMapping("/api/recomendaciones")
 @RequiredArgsConstructor
 public class RecomendacionIAController {
 	
-	private final RecomendacionIAService recomendacionService;
+	// Cambiado a la interfaz para seguir buenas prácticas de Spring
+	private final IRecomendacionIAService recomendacionService;
 
+    // --- NUEVO ENDPOINT PARA GEMINI IA ---
+    @PostMapping("/generar")
+    public ResponseEntity<RecomendacionIA> generarRecomendacion() {
+        RecomendacionIA nueva = recomendacionService.generarYGuardarRecomendacionGemini();
+        return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
+    }
+
+    // --- ENDPOINTS CRUD EXISTENTES EN TU PROYECTO ---
     @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity<List<RecomendacionIA>> getByUsuario(@PathVariable String idUsuario) {
         return ResponseEntity.ok(recomendacionService.findAllByUsuario(idUsuario));
@@ -34,7 +43,7 @@ public class RecomendacionIAController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<RecomendacionIA> update (@PathVariable String id,@Valid @RequestBody RecomendacionIA recomendacion) {
+    public ResponseEntity<RecomendacionIA> update(@PathVariable String id, @Valid @RequestBody RecomendacionIA recomendacion) {
     	return ResponseEntity.ok(recomendacionService.update(id, recomendacion));
     }
 
@@ -43,5 +52,4 @@ public class RecomendacionIAController {
         recomendacionService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 }
