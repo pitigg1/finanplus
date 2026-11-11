@@ -7,6 +7,7 @@ import { useConfirmar } from '../context/Confirmar';
 import { ChipRiesgo, ChipTexto } from '../components/Chips';
 import { BotonNuevo, FilaVacia, PageHead, TarjetaTabla } from '../components/Piezas';
 import Hoja, { FormularioHoja } from '../components/Hoja';
+import PronosticoInversiones from '../components/PronosticoInversiones';
 import { Campo, Entrada, GrupoMonto, HeroMonto, SelectorTipoActivo, Segmentado, opciones } from '../components/Campos';
 
 const RIESGOS = opciones(['MEDIO', 'BAJO', 'ALTO']);
@@ -103,8 +104,9 @@ export default function InversionesPage() {
             <Campo col="col-md-3" etiqueta="Valor actual">
               <GrupoMonto valor={form.valorActual} onChange={(valorActual) => poner({ valorActual })} requerido />
             </Campo>
-            <Campo col="col-md-3" etiqueta="Rentabilidad (%)">
-              <Entrada type="number" step="any" value={form.rentabilidad} onChange={(e) => poner({ rentabilidad: e.target.value })} />
+            <Campo col="col-md-3" etiqueta="Rentabilidad anual (%)">
+              <Entrada type="number" step="any" min="-99" max="1000" value={form.rentabilidad} onChange={(e) => poner({ rentabilidad: e.target.value })} />
+              <div className="form-text">Se usa para el pronóstico. Si la dejas vacía, se asume 8 %.</div>
             </Campo>
             <Campo col="col-md-3" tipo="seg" etiqueta="Riesgo">
               <Segmentado opciones={RIESGOS} valor={form.riesgo} onChange={(riesgo) => poner({ riesgo })} />
@@ -134,6 +136,8 @@ export default function InversionesPage() {
         ))}
         {!inversiones.length && <FilaVacia columnas={8} texto="No hay inversiones" />}
       </TarjetaTabla>
+
+      <PronosticoInversiones inversiones={inversiones} />
     </main>
   );
 }

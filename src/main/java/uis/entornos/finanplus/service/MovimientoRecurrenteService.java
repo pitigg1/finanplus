@@ -47,6 +47,7 @@ public class MovimientoRecurrenteService implements IMovimientoRecurrenteService
         m.setIdRecurrencia(null);                       // nunca se pisa un recurrente que ya existe
         m.setUsuario(seguridad.referenciaActual());     // el dueño es quien lo crea, no lo que mande el cliente
         m.setCategoria(categoria);
+        m.setTipoMovimiento(TipoDeCategoria.resolver(categoria, m.getTipoMovimiento())); // = tipo de la categoría
         return repository.save(m);
     }
 
@@ -61,7 +62,7 @@ public class MovimientoRecurrenteService implements IMovimientoRecurrenteService
 
         existente.setNombre(m.getNombre());
         existente.setCategoria(categoria);
-        existente.setTipoMovimiento(m.getTipoMovimiento());
+        existente.setTipoMovimiento(TipoDeCategoria.resolver(categoria, m.getTipoMovimiento())); // = tipo de la categoría
         existente.setMontoEstimado(m.getMontoEstimado());
         existente.setFrecuencia(m.getFrecuencia());
         existente.setProximaFecha(m.getProximaFecha());

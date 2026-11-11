@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import uis.entornos.finanplus.enums.EstadoMeta;
+import uis.entornos.finanplus.enums.TipoMovimiento;
 import uis.entornos.finanplus.model.AporteMeta;
 import uis.entornos.finanplus.model.MetaAhorro;
 import uis.entornos.finanplus.model.RegistroFinanciero;
@@ -23,6 +24,7 @@ public class AporteMetaService implements IAporteMetaService {
     private final MetaAhorroRepository metaRepository;
     private final RegistroFinancieroRepository registroRepository;
     private final uis.entornos.finanplus.security.SeguridadService seguridad;
+    private final IAlertaAutomaticaService alertaService;
 
     @Override
     public List<AporteMeta> findAllByMeta(String idMeta) {
@@ -59,10 +61,23 @@ public class AporteMetaService implements IAporteMetaService {
         if (meta.getEstado() != EstadoMeta.ACTIVA) {
             throw new RuntimeException("Solo se puede aportar a metas activas");
         }
+        // El aporte se respalda con un registro de AHORRO, usado una sola vez y por el mismo valor
+        if (registro.getTipoMovimiento() != TipoMovimiento.AHORRO) {
+            throw new RuntimeException("El registro de un aporte debe ser de tipo AHORRO");
+        }
+        if (repository.existsByRegistroIdRegistro(registro.getIdRegistro())) {
+            throw new RuntimeException("Ese registro ya se usó en otro aporte");
+        }
+        if (aporte.getMonto().compareTo(registro.getMonto()) != 0) {
+            throw new RuntimeException("El monto del aporte debe ser igual al monto de su registro");
+        }
 
         meta.setMontoActual(meta.getMontoActual().add(aporte.getMonto()));
         actualizarEstado(meta);
         metaRepository.save(meta);
+        if (meta.getEstado() == EstadoMeta.COMPLETADA) {
+            alertaService.notificarMetaCumplida(meta); // la meta acaba de llegar al objetivo
+        }
 
         aporte.setMeta(meta);
         aporte.setRegistro(registro);
@@ -74,14 +89,24 @@ public class AporteMetaService implements IAporteMetaService {
     public AporteMeta update(String id, AporteMeta aporte) {
         AporteMeta existente = findById(id);
         MetaAhorro meta = existente.getMeta();
+        if (meta.getEstado() == EstadoMeta.CANCELADA) {
+            throw new RuntimeException("No se puede modificar un aporte de una meta cancelada");
+        }
 
         // Ajustamos la meta solo con la diferencia entre el monto nuevo y el viejo
         BigDecimal diferencia = aporte.getMonto().subtract(existente.getMonto());
+        EstadoMeta estadoAntes = meta.getEstado();
         meta.setMontoActual(meta.getMontoActual().add(diferencia).max(BigDecimal.ZERO));
         actualizarEstado(meta);
         metaRepository.save(meta);
+        if (estadoAntes != EstadoMeta.COMPLETADA && meta.getEstado() == EstadoMeta.COMPLETADA) {
+            alertaService.notificarMetaCumplida(meta);
+        }
 
         existente.setMonto(aporte.getMonto());
+        // el registro que respalda el aporte conserva el mismo valor
+        existente.getRegistro().setMonto(aporte.getMonto());
+        registroRepository.save(existente.getRegistro());
         return repository.save(existente);
     }
 

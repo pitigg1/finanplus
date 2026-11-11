@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -14,7 +13,7 @@ public class RegistroFinancieroRequestDTO {
 	@NotNull(message = "La categoría es obligatoria")
     private Integer idCategoria;
 
-    @NotBlank(message = "El tipo de movimiento es obligatorio")
+    // Opcional: si no se envía se toma el tipo de la categoría; si se envía debe ser igual al de la categoría.
     private String tipoMovimiento;
 
     @NotNull(message = "El monto es obligatorio")

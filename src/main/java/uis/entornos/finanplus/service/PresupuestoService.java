@@ -36,6 +36,7 @@ public class PresupuestoService implements IPresupuestoService {
         Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
         seguridad.exigirCategoriaVisible(categoria);
+        exigirCategoriaDeGasto(categoria);
 
         Presupuesto presupuesto = Presupuesto.builder()
                 .usuario(usuario)
@@ -75,6 +76,7 @@ public class PresupuestoService implements IPresupuestoService {
         Categoria categoria = categoriaRepository.findById(request.getIdCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getIdCategoria()));
         seguridad.exigirCategoriaVisible(categoria);
+        exigirCategoriaDeGasto(categoria);
 
         presupuesto.setCategoria(categoria);
         presupuesto.setMes(request.getMes());
@@ -91,6 +93,14 @@ public class PresupuestoService implements IPresupuestoService {
             throw new RuntimeException("No tiene permisos para eliminar este presupuesto");
         }
         presupuestoRepository.deleteById(id);
+    }
+
+    // Un presupuesto es un límite de GASTO: sobre una categoría de ingreso, ahorro o inversión siempre mostraría 0.
+    private void exigirCategoriaDeGasto(Categoria categoria) {
+        if (categoria.getTipo() != TipoMovimiento.GASTO) {
+            throw new RuntimeException("Solo se puede crear un presupuesto sobre una categoría de tipo GASTO (la categoría «"
+                    + categoria.getNombre() + "» es de tipo " + categoria.getTipo() + ")");
+        }
     }
 
     // Lo gastado se calcula en el momento: suma de los GASTOS del usuario en esa categoría, mes y año.

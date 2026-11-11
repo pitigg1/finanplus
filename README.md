@@ -11,7 +11,7 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 - Javier Alberto Alean González - 2235610 
 - José David Erazo - 2230076 
 
-> **Estado: primera versión.** Incluye el backend (API REST con seguridad JWT y base de datos MySQL) y un frontend sencillo en HTML/JavaScript pensado para **probar los CRUD** del backend. Las funciones avanzadas (IA, alertas automáticas, reportes) están planeadas pero aún no implementadas.
+> **Estado:** backend completo (API REST con seguridad JWT y MySQL), frontend en React y tres funciones automáticas: **alertas, recurrentes y pronóstico de inversiones**. Las recomendaciones con IA y los reportes están planeados pero aún no implementados.
 
 ## Tabla de contenido
 
@@ -22,7 +22,7 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 5. [Puesta en marcha](#puesta-en-marcha)
 6. [Uso rápido](#uso-rápido)
 7. [Autenticación y seguridad](#autenticación-y-seguridad)
-8. [Referencia de la API](#referencia-de-la-api)
+8. [Funciones automáticas](#funciones-automáticas)
 9. [Modelo de datos](#modelo-de-datos)
 10. [Frontend](#frontend)
 11. [Estado del proyecto](#estado-del-proyecto)
@@ -44,16 +44,16 @@ Lo que ya funciona en esta versión:
 |---|---|
 | **Cuenta de usuario** | Registro, inicio de sesión (JWT), consulta/edición/eliminación de usuarios, perfil del usuario autenticado |
 | **Mi perfil** | Cambiar nombre, país y moneda (se aplica a todos los montos de la app), foto de perfil, contraseña y eliminar la cuenta |
-| **Registros financieros** | CRUD de ingresos, gastos, ahorros e inversiones con monto, fecha, descripción, categoría y etiquetas |
+| **Registros financieros** | CRUD de ingresos, gastos, ahorros e inversiones con monto, fecha, descripción, categoría y etiquetas. **El tipo del registro es siempre el de su categoría** (no se puede registrar una inversión en una categoría de gasto) |
 | **Categorías** | CRUD de categorías por tipo (`INGRESO`, `GASTO`, `AHORRO`, `INVERSION`) con icono y color |
 | **Etiquetas** | CRUD de etiquetas para agrupar movimientos de distintas categorías (relación muchos a muchos) |
 | **Presupuestos** | Límite de gasto por categoría, mes y año; el gasto actual se calcula automáticamente |
 | **Metas de ahorro** | CRUD de metas con monto objetivo, fecha límite, prioridad y estado |
 | **Aportes a metas** | Aportes que suman al avance de la meta y la marcan como completada al alcanzar el objetivo |
-| **Movimientos recurrentes** | CRUD de pagos e ingresos fijos (diario, semanal, mensual, anual) |
-| **Inversiones** | CRUD de inversiones (CDT, acciones, ETF, fondos, cripto, bonos) con valor actual, rentabilidad y riesgo |
+| **Movimientos recurrentes** | CRUD de pagos e ingresos fijos (diario, semanal, mensual, anual). **Se registran solos** en su fecha |
+| **Inversiones** | CRUD de inversiones (CDT, acciones, ETF, fondos, cripto, bonos) con valor actual, rentabilidad y riesgo, y **pronóstico** (panel en la pantalla de Inversiones y API) a un plazo dado |
 | **Métricas financieras** | Cálculo del mes actual: ingresos, gastos, flujo neto, tasa de ahorro, score (0–100) y nivel de riesgo |
-| **Notificaciones** | CRUD de alertas (gasto elevado, presupuesto excedido, meta próxima a vencer, meta cumplida) con marca de leída |
+| **Notificaciones** | Alertas **generadas automáticamente** (presupuesto al 80 % o excedido, meta próxima a vencer o cumplida, gastos mayores que ingresos), con marca de leída |
 | **Recomendaciones IA** | CRUD para almacenar recomendaciones (la generación automática con IA aún no está implementada) |
 
 ## Tecnologías
@@ -69,7 +69,7 @@ Lo que ya funciona en esta versión:
 - Maven (se incluye Maven Wrapper: `mvnw` / `mvnw.cmd`)
 
 **Frontend**
-- HTML + JavaScript (vanilla, `fetch`) + Bootstrap
+- React 18 + Vite + React Router + Bootstrap (carpeta `frontend/`)
 - El token JWT se guarda en `localStorage`
 
 ## Arquitectura y estructura del proyecto
@@ -77,7 +77,7 @@ Lo que ya funciona en esta versión:
 El backend sigue una arquitectura en capas clásica:
 
 ```
-Frontend (HTML/JS)  ──HTTP/JSON + JWT──▶  Controller ──▶ Service ──▶ Repository ──▶ MySQL
+Frontend (React)  ──HTTP/JSON + JWT──▶  Controller ──▶ Service ──▶ Repository ──▶ MySQL
                                            (REST)       (negocio)    (Spring Data JPA)
 ```
 
@@ -90,13 +90,15 @@ finanplus/
 │   └── diagrama_er.png          # Diagrama entidad-relación
 ├── docs/
 │   └── Entrega1_proyectoEntornos.docx   # Informe inicial (problema, requisitos, historias de usuario)
-├── frontend/                    # Frontend de prueba (HTML + JS)
-│   ├── login.html, index.html, registros.html, categorias.html, ...
-│   └── js/                      # Un script por página + comun.js (API, token, sesión)
+├── frontend/                    # Frontend React + Vite (ver sección Frontend)
+│   ├── src/pages/               # Una página por módulo
+│   └── src/lib/                 # api.js (fetch + JWT), sesion.js, formato.js
 └── src/main/
     ├── java/uis/entornos/finanplus/
     │   ├── FinanPlusApplication.java   # Clase principal
-    │   ├── config/        # SecurityConfig: rutas públicas, CORS, JWT, BCrypt
+    │   ├── config/        # SecurityConfig (rutas públicas, CORS, JWT, BCrypt) y ProgramacionConfig (tareas programadas)
+    │   ├── scheduler/     # TareasProgramadas: recurrentes (00:05) y alertas (00:30)
+    │   ├── event/         # Eventos internos (EvaluarAlertasEvent)
     │   ├── security/      # JwtService, JwtAuthenticationFilter, UserDetailsServiceImpl
     │   ├── controller/    # Endpoints REST (/api/...)
     │   ├── service/       # Interfaces (I*Service) y su lógica de negocio
@@ -117,7 +119,7 @@ finanplus/
 | JDK | 17 o superior | Compilar y ejecutar el backend |
 | MySQL Server | 8.x | Base de datos |
 | Git | cualquiera | Clonar el repositorio |
-| VS Code + extensión *Live Server* (o cualquier servidor estático) | — | Servir el frontend |
+| Node.js + npm | 18 o superior | Ejecutar el frontend (React + Vite) |
 
 No necesitas instalar Maven: el proyecto incluye `mvnw`.
 
@@ -169,19 +171,25 @@ java -jar target/FinanPlus-0.0.1-SNAPSHOT.jar
 
 Para correr las pruebas: `./mvnw test`
 
-### 5. Abrir el frontend
+### 5. Arrancar el frontend
 
-El backend no sirve la carpeta `frontend/`; hay que servirla aparte:
+Con el backend ya encendido, en **otra terminal**:
 
-1. Abre la carpeta del proyecto en VS Code.
-2. Clic derecho sobre `frontend/login.html` → **Open with Live Server**.
-3. Se abre en `http://127.0.0.1:5500/frontend/login.html`.
+```bash
+cd frontend
+npm install        # solo la primera vez
+npm run dev
+```
 
-> **Importante:** el backend solo acepta peticiones desde los orígenes `http://127.0.0.1:5500`, `http://localhost:5500` y `http://localhost:8094` (CORS, en `SecurityConfig`). Si sirves el frontend en otro puerto, agrégalo allí. Además, el frontend apunta a `http://localhost:8094/api` (constante `API` en `frontend/js/comun.js`).
+Se abre en **http://localhost:3000**. El frontend espera el backend en `http://localhost:8094/api`; si está en otra dirección, crea `frontend/.env` con `VITE_API_URL=http://mi-servidor/api`.
+
+> **CORS:** el backend solo acepta peticiones desde `http://localhost:3000`, `http://localhost:5500`, `http://127.0.0.1:5500` y `http://localhost:8094` (en `SecurityConfig`). Si cambias el puerto del frontend, agrégalo allí.
+>
+> **Correo de recuperar contraseña:** el enlace apunta por defecto a `http://127.0.0.1:5500`. Para el frontend en React define `FINANPLUS_FRONTEND_URL=http://localhost:3000` (o `finanplus.frontend.url=http://localhost:3000` en `application-local.properties`).
 
 ## Uso rápido
 
-1. Abre `login.html` y **crea una cuenta** (nombre, correo, contraseña de mínimo 6 caracteres).
+1. Abre `http://localhost:3000`, ve a **Crear cuenta** y regístrate (nombre, correo, contraseña de mínimo 6 caracteres).
 2. Serás redirigido al **Inicio**, que muestra accesos a cada módulo.
 3. Orden sugerido para probar:
    1. **Categorías** → crea al menos una de ingreso y una de gasto (las categorías son compartidas, no por usuario).
@@ -190,6 +198,7 @@ El backend no sirve la carpeta `frontend/`; hay que servirla aparte:
    4. **Metas de ahorro** → crea una meta y registra aportes.
    5. **Métricas** → pide el cálculo del mes actual.
    6. Explora Inversiones, Recurrentes, Etiquetas, Notificaciones y Recomendaciones.
+   7. Prueba las [funciones automáticas](#funciones-automáticas) (alertas, recurrentes y pronóstico).
 
 ## Autenticación y seguridad
 
@@ -258,6 +267,41 @@ Las pruebas usan una base **H2 en memoria** (`src/test/resources/application.pro
 
 Quien ya tenga la base creada con una versión anterior debe ejecutar **una vez** `database/migracion_cuentas_seguridad.sql` (agrega roles, dueño de categorías y etiquetas, y la tabla de recuperación). Quien la cree desde cero con `finanplus.sql` ya tiene todo.
 
+## Funciones automáticas
+
+Tres funciones trabajan solas. Las tareas programadas usan la hora de Colombia (`America/Bogota`) y se pueden desactivar con `finanplus.tareas.habilitadas=false`. Además corren **una vez al arrancar el backend**, para ponerse al día si estuvo apagado a medianoche.
+
+### Recurrentes automáticos
+
+Todos los días a las **00:05** cada movimiento recurrente activo cuya `proximaFecha` ya llegó se convierte en un registro financiero real (marcado como recurrente) y su próxima fecha avanza según la frecuencia. Si pasaron varios periodos sin ejecutarse, se crean todos los pendientes (hasta 400 por recurrente en cada ejecución). En frecuencia mensual, un día 31 pasa a 28/30 en los meses cortos y ya no vuelve al 31.
+
+Para probarlo sin esperar: crea un recurrente con `proximaFecha` de ayer y llama a `POST /api/recurrentes/procesar`; luego revisa tus registros.
+
+### Notificaciones automáticas
+
+Se revisan al crear o editar un registro y todos los días a las **00:30**. Cada alerta se crea una sola vez por elemento.
+
+| Alerta | Cuándo |
+|---|---|
+| `GASTO_ELEVADO` | Lo gastado llega al 80 % del presupuesto del mes |
+| `PRESUPUESTO_EXCEDIDO` | Lo gastado supera el límite del presupuesto |
+| `META_PROXIMA_VENCER` | A una meta activa le quedan 7 días o menos y no ha llegado al objetivo |
+| `META_CUMPLIDA` | Un aporte hace que la meta llegue al objetivo |
+| `GASTO_SUPERA_INGRESOS` | En el mes actual los gastos superan a los ingresos (una vez por mes) |
+
+Para forzar la revisión: `POST /api/notificaciones/evaluar`. Si el usuario **borra** una alerta y la condición sigue activa, se vuelve a crear en la siguiente revisión; para descartarla basta marcarla como leída.
+
+### Pronóstico de inversiones
+
+| Endpoint | Qué hace |
+|---|---|
+| `GET /api/inversiones/{id}/pronostico?meses=36&tasaAnual=11.5&aporteMensual=200000` | Proyecta una inversión (`tasaAnual` en % y `aporteMensual` son opcionales) |
+| `GET /api/inversiones/pronostico?meses=24` | Proyecta todo el portafolio del usuario |
+
+Devuelve tres escenarios (pesimista, esperado y optimista) con capitalización mensual:
+`VF = valorActual × (1+rm)ⁿ + aporteMensual × ((1+rm)ⁿ − 1) / rm`, donde `rm = (1+tasaAnual)^(1/12) − 1`.
+El pronóstico es **individual**: cada inversión se proyecta con **su propia rentabilidad** (% efectivo anual). La tasa se elige así: la `tasaAnual` de la consulta (solo en el pronóstico de una inversión) → la **rentabilidad guardada** en la inversión → si no tiene rentabilidad, una **tasa por defecto del 8 %** (`TASA_POR_DEFECTO` en `PronosticoInversionService`). La respuesta indica de dónde salió en `origenTasa` (`INDICADA_POR_USUARIO`, `RENTABILIDAD_DE_LA_INVERSION` o `TASA_POR_DEFECTO`). En el portafolio, cada inversión usa su tasa y se suman los resultados. El **riesgo** del activo separa los escenarios de la tasa esperada: ±2, ±5 o ±12 puntos si es bajo, medio o alto. Son **supuestos de referencia**, no garantizan rendimientos ni son asesoría financiera.
+
 ## Modelo de datos
 
 Base de datos MySQL `finanplus` con 14 tablas; todo gira alrededor del usuario. El diagrama está en [`database/diagrama_er.png`](database/diagrama_er.png) y el script en [`database/finanplus.sql`](database/finanplus.sql).
@@ -282,38 +326,35 @@ Relaciones principales: un usuario tiene muchos registros, metas, presupuestos, 
 
 ## Frontend
 
-Frontend sencillo (Bootstrap + JavaScript) cuyo propósito es probar los CRUD del backend. Todas las páginas (salvo `login.html`) exigen sesión iniciada.
+Aplicación React (Vite) en la carpeta `frontend/`. Todas las rutas, salvo las de acceso, exigen sesión iniciada.
 
-| Página | Módulo |
+| Ruta | Módulo |
 |---|---|
-| `login.html` | Inicio de sesión y registro |
-| `index.html` | Inicio con accesos a los módulos |
-| `registros.html` | Ingresos y gastos |
-| `presupuestos.html` | Presupuestos |
-| `metas.html` | Metas de ahorro y aportes |
-| `recurrentes.html` | Movimientos recurrentes |
-| `categorias.html` / `etiquetas.html` | Organización de movimientos |
-| `inversiones.html` | Inversiones |
-| `metricas.html` | Métricas financieras |
-| `notificaciones.html` | Notificaciones |
-| `recomendaciones.html` | Recomendaciones IA |
-| `perfil.html` | Mi perfil: datos, moneda, foto y contraseña |
-| `usuarios.html` | Usuarios (solo administradores) |
-| `recuperar.html` / `restablecer.html` | Recuperar contraseña |
+| `/login` | Inicio de sesión y registro |
+| `/recuperar`, `/restablecer?token=…` | Recuperar contraseña |
+| `/` | Inicio con accesos a los módulos |
+| `/registros` | Ingresos y gastos |
+| `/presupuestos` | Presupuestos |
+| `/metas` | Metas de ahorro y aportes |
+| `/recurrentes` | Movimientos recurrentes |
+| `/categorias`, `/etiquetas` | Organización de movimientos |
+| `/inversiones` | Inversiones |
+| `/metricas` | Métricas financieras |
+| `/notificaciones` | Notificaciones |
+| `/recomendaciones` | Recomendaciones IA |
+| `/perfil` | Mi perfil: datos, moneda, foto y contraseña |
+| `/usuarios` | Usuarios (solo administradores) |
 
-Código compartido en `frontend/js/comun.js`: URL de la API, manejo del token, función `api()` que adjunta el JWT y redirige a login si la sesión expira (401).
+Código compartido: `src/lib/api.js` (URL de la API y función `api()` que adjunta el JWT y lleva al login si la sesión expira con 401), `src/lib/sesion.js`, `src/lib/formato.js` y `src/lib/tema.js`. Más detalle en [`frontend/README.md`](frontend/README.md).
 
 ## Estado del proyecto
 
-**Hecho:** modelo de datos, API REST de los 13 módulos, autenticación JWT, manejo centralizado de errores, documentación Swagger y frontend de prueba.
+**Hecho:** modelo de datos, API REST de los 13 módulos, autenticación y roles con JWT, recuperación de contraseña, perfil, documentación Swagger, frontend en React, y las funciones automáticas (alertas, recurrentes y pronóstico de inversiones).
 
 **Pendiente / futuras mejoras** :
 
 - **Recomendaciones con IA:** analizar gastos y sugerir dónde recortar y cuánto ahorrar.
-- **Notificaciones automáticas:** avisar al pasar un presupuesto o al acercarse la fecha de una meta.
 - **Reportes y comparación de periodos:** gráficas por mes y comparación entre periodos.
-- **Pronóstico de inversiones:** proyectar ganancias según plazo, tasa y riesgo.
-- **Recurrentes automáticos:** que los pagos fijos se registren solos en su fecha.
 
 ## Documentación adicional
 

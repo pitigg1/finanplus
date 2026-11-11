@@ -7,15 +7,14 @@ import { useConfirmar } from '../context/Confirmar';
 import { ChipTipo, MontoConSigno } from '../components/Chips';
 import { BotonNuevo, FilaVacia, PageHead, TarjetaTabla } from '../components/Piezas';
 import Hoja, { FormularioHoja } from '../components/Hoja';
-import { Campo, Entrada, HeroMonto, SelectorCategorias, Segmentado, opciones } from '../components/Campos';
+import { Campo, Entrada, HeroMonto, SelectorCategorias } from '../components/Campos';
 
-const TIPOS = opciones(['GASTO', 'INGRESO', 'AHORRO', 'INVERSION']);
 const COLUMNAS = [
   { t: 'Fecha' }, { t: 'Tipo' }, { t: 'Categoría' }, { t: 'Descripción' },
   { t: 'Monto', className: 'text-end' }, { t: 'Etiquetas' }, { t: 'Acciones', className: 'text-end' },
 ];
 
-const formVacio = () => ({ id: '', categoria: '', tipo: 'GASTO', monto: 0, descripcion: '', fecha: ahora().slice(0, 16), etiquetas: [] });
+const formVacio = () => ({ id: '', categoria: '', tipo: '', monto: 0, descripcion: '', fecha: ahora().slice(0, 16), etiquetas: [] });
 
 export default function RegistrosPage() {
   const { mensaje, intentar } = useAviso();
@@ -42,10 +41,10 @@ export default function RegistrosPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Al elegir la categoría, el tipo se llena solo con el tipo de esa categoría
+  // El tipo del registro ES el de su categoría: se llena solo al elegirla y no se puede cambiar a mano
   const elegirCategoria = (id) => {
     const categoria = categorias.find((c) => String(c.idCategoria) === id);
-    poner({ categoria: id, ...(categoria ? { tipo: categoria.tipo } : {}) });
+    poner({ categoria: id, tipo: categoria ? categoria.tipo : '' });
   };
 
   const alternarEtiqueta = (id) =>
@@ -67,7 +66,7 @@ export default function RegistrosPage() {
     setForm({
       id: r.idRegistro,
       categoria: String(r.idCategoria ?? ''),
-      tipo: r.tipoMovimiento,
+      tipo: (categorias.find((c) => c.idCategoria === r.idCategoria) || {}).tipo || r.tipoMovimiento,
       monto: Number(r.monto),
       descripcion: r.descripcion || '',
       fecha: String(r.fechaMovimiento).slice(0, 16),
@@ -87,7 +86,7 @@ export default function RegistrosPage() {
       // Estructura de RegistroFinancieroRequestDTO
       const datos = {
         idCategoria: Number(form.categoria),
-        tipoMovimiento: form.tipo,
+        tipoMovimiento: form.tipo || undefined, // el backend exige que sea el de la categoría
         monto: form.monto,
         descripcion: form.descripcion,
         fechaMovimiento: form.fecha,
@@ -127,9 +126,9 @@ export default function RegistrosPage() {
             <Campo col="col-md-4" tipo="bloque" etiqueta="Categoría">
               <SelectorCategorias categorias={categorias} valor={form.categoria} onChange={elegirCategoria} />
             </Campo>
-            <Campo col="col-md-2" tipo="seg" etiqueta="Tipo">
-              <Segmentado opciones={TIPOS} valor={form.tipo} onChange={(tipo) => poner({ tipo })} />
-              <div className="form-text">Se llena según la categoría</div>
+            <Campo col="col-md-2" tipo="bloque" etiqueta="Tipo">
+              {form.tipo ? <ChipTipo tipo={form.tipo} /> : <span className="text-muted">—</span>}
+              <div className="form-text">Es el de la categoría</div>
             </Campo>
             <Campo col="col-md-4" etiqueta="Fecha">
               <Entrada type="datetime-local" requerido value={form.fecha} onChange={(e) => poner({ fecha: e.target.value })} />
