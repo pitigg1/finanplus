@@ -34,7 +34,7 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 Mucha gente no sabe en qué se le va el sueldo, no ahorra porque nunca calcula cuánto podría apartar y no invierte por falta de conocimiento financiero. Pasa tanto con estudiantes como con personas que ya trabajan, y casi nunca es por falta de interés, sino porque no tienen una herramienta sencilla que les muestre con claridad en qué gastan y qué podrían cambiar.
 
 ### La solución
-FinanPlus permite a cualquier persona, sin conocimientos financieros, registrar sus ingresos y gastos, clasificarlos, fijarse presupuestos mensuales, crear metas de ahorro, llevar sus inversiones y ver indicadores de su salud financiera. A futuro incorporará sugerencias con IA y alertas automáticas.
+FinanPlus permite a cualquier persona, sin conocimientos financieros, registrar sus ingresos y gastos, clasificarlos, fijarse presupuestos mensuales, crear metas de ahorro, llevar sus inversiones y ver indicadores de su salud financiera, además de incorporar sugerencias con IA y alertas automáticas.
 
 ## Funcionalidades
 
