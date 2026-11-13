@@ -20,7 +20,7 @@ public class MailService {
 
     private final ObjectProvider<JavaMailSender> remitente;
 
-    @Value("${finanplus.frontend.url:http://127.0.0.1:5500}")
+    @Value("${finanplus.frontend.url:http://localhost:8094}")
     private String urlFrontend;
 
     @Value("${spring.mail.username:}")
