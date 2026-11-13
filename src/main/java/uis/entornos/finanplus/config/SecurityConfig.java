@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import uis.entornos.finanplus.security.JwtAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 
 import java.util.Arrays;
 
@@ -40,26 +41,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 1. Permite explícitamente las peticiones de Preflight (OPTIONS)
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // Permitir despachos internos y de error (indispensable para el SpaController)
+                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                 
-                // 2. Rutas públicas
-                .requestMatchers(
-                    "/", 
-                    "/index.html", 
-                    "/*.html", 
-                    "/*.js", 
-                    "/*.css", 
-                    "/favicon.ico",
-                    "/api/auth/**",
-                    "/error",
-                    "/v3/api-docs/**", 
-                    "/swagger-ui/**", 
-                    "/api-docs/**", 
-                    "/swagger-ui.html"
-                ).permitAll()
+                // 2. Todo lo que sea api/** requiere autenticación excepto los endpoints de login y registro (que están en AuthController)
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/**").authenticated()
                 
-                // 3. Todo el resto de la API requiere autenticación JWT
-                .anyRequest().authenticated()
-            )
+                // 3. Todo el resto es público (login, registro, etc.)
+                .anyRequest().permitAll()
+            ).formLogin(form -> form.disable())
             // Sin sesión o token vencido -> 401 (el frontend lleva al login).
             // Con sesión pero sin permiso -> 403 (el frontend muestra el mensaje y NO cierra la sesión).
             .exceptionHandling(e -> e
