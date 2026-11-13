@@ -11,7 +11,7 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 - Javier Alberto Alean González - 2235610 
 - José David Erazo - 2230076 
 
-> **Estado:** backend completo (API REST con seguridad JWT y MySQL), frontend en React y tres funciones automáticas: **alertas, recurrentes y pronóstico de inversiones**. Las recomendaciones con IA y los reportes están planeados pero aún no implementados.
+> **Estado:** backend completo (API REST con seguridad JWT y MySQL), frontend en React y tres funciones automáticas: **alertas, recurrentes y pronóstico de inversiones. Además de la opción de generar recomendaciones financieras con IA**.
 
 ## Tabla de contenido
 
@@ -34,7 +34,7 @@ Proyecto de la asignatura **Entornos de Programación (Grupo F1)** — Universid
 Mucha gente no sabe en qué se le va el sueldo, no ahorra porque nunca calcula cuánto podría apartar y no invierte por falta de conocimiento financiero. Pasa tanto con estudiantes como con personas que ya trabajan, y casi nunca es por falta de interés, sino porque no tienen una herramienta sencilla que les muestre con claridad en qué gastan y qué podrían cambiar.
 
 ### La solución
-FinanPlus permite a cualquier persona, sin conocimientos financieros, registrar sus ingresos y gastos, clasificarlos, fijarse presupuestos mensuales, crear metas de ahorro, llevar sus inversiones y ver indicadores de su salud financiera. A futuro incorporará sugerencias con IA y alertas automáticas.
+FinanPlus permite a cualquier persona, sin conocimientos financieros, registrar sus ingresos y gastos, clasificarlos, fijarse presupuestos mensuales, crear metas de ahorro, llevar sus inversiones y ver indicadores de su salud financiera, además de incorporar sugerencias con IA y alertas automáticas.
 
 ## Funcionalidades
 
@@ -54,7 +54,7 @@ Lo que ya funciona en esta versión:
 | **Inversiones** | CRUD de inversiones (CDT, acciones, ETF, fondos, cripto, bonos) con valor actual, rentabilidad y riesgo, y **pronóstico** (panel en la pantalla de Inversiones y API) a un plazo dado |
 | **Métricas financieras** | Cálculo del mes actual: ingresos, gastos, flujo neto, tasa de ahorro, score (0–100) y nivel de riesgo |
 | **Notificaciones** | Alertas **generadas automáticamente** (presupuesto al 80 % o excedido, meta próxima a vencer o cumplida, gastos mayores que ingresos), con marca de leída |
-| **Recomendaciones IA** | CRUD para almacenar recomendaciones (la generación automática con IA aún no está implementada) |
+| **Recomendaciones IA** | CRUD para almacenar recomendaciones |
 
 ## Tecnologías
 
@@ -199,6 +199,7 @@ Se abre en **http://localhost:3000**. El frontend espera el backend en `http://l
    5. **Métricas** → pide el cálculo del mes actual.
    6. Explora Inversiones, Recurrentes, Etiquetas, Notificaciones y Recomendaciones.
    7. Prueba las [funciones automáticas](#funciones-automáticas) (alertas, recurrentes y pronóstico).
+   8. Genera recomendaciones financieras con solo presionar un botón.
 
 ## Autenticación y seguridad
 
@@ -250,7 +251,7 @@ Si no hay un servidor de correo configurado, el enlace se imprime en la **consol
 | `FINANPLUS_FRONTEND_URL` | Dirección del frontend (para el enlace del correo) | `http://127.0.0.1:5500` |
 | `FINANPLUS_UPLOADS_DIR` | Carpeta donde se guardan las fotos de perfil | `uploads/` (junto al proyecto; está en `.gitignore`) |
 | `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`, `SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH`, `SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE` | Correo para recuperar contraseña (por ejemplo Gmail con contraseña de aplicación) | El enlace sale en la consola |
-
+| `gemini.api.key`, `gemini.model` | API Key de Google AI Studio para conectarse a un modelo específico en nube | Ocurre error al llamar a la api |
 > **Forma cómoda de configurar todo esto sin variables de entorno:** copia `src/main/resources/application-local.properties.example` como `application-local.properties` (ese archivo **no se sube a GitHub**), pon tus datos (correo, contraseña de MySQL...) y arranca con el perfil `local`: `./mvnw spring-boot:run -Dspring-boot.run.profiles=local`.
 
 > La clave de firma ya **no está en el código** (antes tenía un valor por defecto público: con él cualquiera podía fabricar un token). Las claves de servicios externos (por ejemplo la de la IA) deben ir también en variables de entorno, nunca en el repositorio.
@@ -349,11 +350,9 @@ Código compartido: `src/lib/api.js` (URL de la API y función `api()` que adjun
 
 ## Estado del proyecto
 
-**Hecho:** modelo de datos, API REST de los 13 módulos, autenticación y roles con JWT, recuperación de contraseña, perfil, documentación Swagger, frontend en React, y las funciones automáticas (alertas, recurrentes y pronóstico de inversiones).
+**Hecho:** modelo de datos, API REST de los 13 módulos, autenticación y roles con JWT, recuperación de contraseña, perfil, documentación Swagger, frontend en React, y las funciones automáticas (alertas, recurrentes y pronóstico de inversiones), recomendaciones con ayuda de la IA para analizar gastos y sugerir dónde recortar.
 
 **Pendiente / futuras mejoras** :
-
-- **Recomendaciones con IA:** analizar gastos y sugerir dónde recortar y cuánto ahorrar.
 - **Reportes y comparación de periodos:** gráficas por mes y comparación entre periodos.
 
 ## Documentación adicional
